@@ -1,0 +1,30 @@
+ARGC: 2
+ARGIND: 1
+ARGV: array, 2 elements
+BINMODE: 0
+CONVFMT: "%.6g"
+ERRNO: ""
+FIELDWIDTHS: ""
+FILENAME: "test1.md"
+FNR: 1
+FPAT: "[^[:space:]]+"
+FS: "__________"
+IGNORECASE: 0
+LINT: 0
+Lite: array, 3 elements
+Lites: "(_|`|*)"
+NF: 1
+NR: 1
+OFMT: "%.6g"
+OFS: " "
+ORS: "\n"
+PREC: 53
+RLENGTH: -1
+ROUNDMODE: "N"
+RS: "__________"
+RSTART: 0
+RT: uninitialized scalar
+SUBSEP: "\034"
+TEXTDOMAIN: "messages"
+ends: untyped variable
+last: "0"
