@@ -23,16 +23,17 @@ function init(str,d,     i,n,tmp,sep,out,key){
 function markdow(     i,n,lines,blanks,last) {
   n = split($0,lines,"\n")
   last=""
-  for(i=i;i<=n;i++)  {
+  for(i=i;i<n;i++)  {
     line = lines[i]
-    now = what(line)
+    now = what(lines,i)
     if (now=="blank") {
        blanks++
        continue
     } else {
-        eblanks=0
+        blanks=0
         finish(last,now,blanks)
-    
+        if (now=="pre")
+            XXX
         finish(last,"pre")
         i += pre(lines)
         last = "pre"
@@ -42,7 +43,8 @@ function markdow(     i,n,lines,blanks,last) {
     last = worker(lines[i],blanks,last)
   }
 }
-function what(line) {
+function what(lines,i,     line) {
+  line = lines[i]
   if (line       ~ /^$/)                 return "blank"
   if (line       ~ /^(    |\t)[^\+0-9]/) return "pre"
   if (line       ~ /^(    |\t)\+/)       return "ul"
