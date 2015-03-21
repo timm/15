@@ -3,6 +3,7 @@ BEGIN {
   init("head=head.html neck=neck.html "\
        "foot=foot.html base=timm/15/markdow",
        Parts)
+  Linkp="(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
 }
 BEGIN {
   FS = RS = "_____" "_____"
@@ -18,32 +19,45 @@ function init(str,d,     i,n,tmp,sep,out,key){
 	  sep    = "|"
   }
   return  "(" out ")"
-}
-
-ends["0","p"] = "<p>"
-ends["p","h"] = ""
-ends["u","h"] = "</ul>"
-ends["d","h"] = "</dl>"
-ends["o","h"] = "</ol>"
-
-     
-function markdow(     i,n,lines,line) {
+}     
+function markdow(     i,n,lines,blanks,last) {
   n = split($0,lines,"\n")
-  last="0"
-  for(i=1;i<=n;i++)  {
+  last=""
+  for(i=i;i<=n;i++)  {
     line = lines[i]
-    if (line)
-        print inline(line)
-    else
-        print "<P>"
+    now = what(line)
+    if (now=="blank") {
+       blanks++
+       continue
+    } else {
+        eblanks=0
+        finish(last,now,blanks)
+    
+        finish(last,"pre")
+        i += pre(lines)
+        last = "pre"
+        continue
+    }
+    last = now 
+    last = worker(lines[i],blanks,last)
   }
 }
+function what(line) {
+  if (line       ~ /^$/)                 return "blank"
+  if (line       ~ /^(    |\t)[^\+0-9]/) return "pre"
+  if (line       ~ /^(    |\t)\+/)       return "ul"
+  if (line       ~ /^(    |\t)[0-9]/)    return "ol"
+  if (line       ~ /^#/)                 return "inhead"
+  if (lines[i+1] ~ /^=/)                 return "h1"
+  if (lines[i+1] ~ /^-/)                 return "h2"
+  if (lines[i+1] ~ /^~/)                 return "h3"
+  return "p"
+}    
 function inline(str,
                 x,after,b4,out,i,pat,here,        \
                 more,link,url,txt,img,linkp,q) {
-  linkp="(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
   q="\""
-  while (match(str,linkp,x)) {
+  while (match(str,Linkp,x)) {
     here = RSTART
     more = RLENGTH
     url  = x[3]
