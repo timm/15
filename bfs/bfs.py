@@ -1,0 +1,86 @@
+from __future__ import division,print_function
+import sys,re
+sys.dont_write_bytecode = True
+
+def go(f):
+  print("################\n#",f.__name__,"\n")
+  f()
+
+class o:
+  def __init__(i,**d)    : i.add(**d)
+  def has(i)             : return i.__dict__
+  def add(i,**d)         : i.has().update(**d); return i
+  def __setitem__(i,k,v) : i.has()[k] = v
+  def __getitem__(i,k)   : return i.has()[k]
+  def __repr__(i)        : return str(i.has())
+
+def data(f):
+  t =o(lines=[],value={})
+  n = 0
+  want = None
+  with open(f) as lines:
+    for line in lines:
+      line = re.sub(r"[\t\n\r ]","",line)
+      line = re.split(",",line)
+      if want and len(line) != want: continue
+      if n:
+        effort = line[-1]
+        if effort:
+          effort = float(effort)
+          line[-1] = effort
+          t.lines += [line]
+      else:
+        t.header = line
+        want = len(line)
+      n += 1
+  return t
+
+def median(lst):
+  lst = sorted(lst)
+  n = len(lst)
+  p = int(n/2)
+  q = min(n-1,p+1)
+  r = int(p/2)
+  iqr = lst[3*r] - lst[r]
+  if n % 2 :
+    return lst[p], iqr
+  else:
+    return (lst[p] + lst[q])/2,iqr
+
+@go
+def _median():
+  print(median([10,11,12,8,9]))
+  print(median([10,11,8,9]))
+  
+#@go
+def _data(f="data.csv"):
+  return data(f)
+
+def one(t):
+  print(len(t.header))
+  for i,head in enumerate(t.header[:-1]):
+    d   = {}
+    iqr = {}
+    for line in t.lines:
+       y = line[-1]
+       x = line[i]
+       nums = d.get(x,[])
+       nums.append(y)
+       d[x] = nums
+    for k in d:
+      #print("k",head,k,sorted(d[k]),"med",median(d[k]))
+      d[k],_ = median(d[k])
+    mre = []
+    for line in t.lines:
+      want = line[-1]
+      got = d[line[i]]
+      mre.append(abs(want-got)/got)
+    t.value[head] = median(mre)
+    print(head,t.value[head])
+
+       
+
+@go
+def _one(): one(_data())
+
+  

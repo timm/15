@@ -1,5 +1,17 @@
-v=awkvars.out
-gawk --dump-variables -f gitdown.awk ${1:-test1.md}
-if [ -f "$v" ]; then
-  cat $v | grep -v '^[A-Z]'
-fi
+
+out=/tmp/$USER/gitdown.html
+
+tmp=$(dirname $out)
+mkdir -p $tmp
+
+
+v=$tmp/awkvars.out
+
+rm -rf $out
+
+gawk --dump-variables=$v -f gitdown.awk ${1:-test1.md} | tee $out
+
+open $out
+
+[ -f "$v" ] && cat $v | grep -v '^[A-Z]'
+
