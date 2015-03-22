@@ -154,16 +154,16 @@ function inline(str,
   while (match(str,Linkp,x)) {
     here = RSTART
     more = RLENGTH
-    url  = x[3]
+    url  = q x[3] q
     txt  = x[2]
     img  = x[1]
     b4   = substr(str, 1, here-1)
     if (img)
-      link = "<img src="q url q" alt=\""txt"\">"
-	  else
-	    link = "<a href="q url q">" lites(txt) "</a>"
-	  out = out lites(b4) link
-	  str = substr(str, here + more) 
+      link = "<img src="url" alt=\""txt"\">"
+    else
+      link = "<a href="url ">" lites(txt) "</a>"
+    out = out lites(b4) link
+    str = substr(str, here + more) 
   }
   return out lites(str)
 }
