@@ -4,11 +4,9 @@ BEGIN {
        "foot=foot.html base=timm/15/markdow",
        Parts)
   Linkp="(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
-}
-BEGIN {
   FS = RS = "_____" "_____"
   getline
-	gitdown()
+  gitdown($0)
 }
 function init(str,d,     i,n,tmp,sep,out,key){
   n = split(str, tmp, "( |=|\n)")
@@ -20,16 +18,15 @@ function init(str,d,     i,n,tmp,sep,out,key){
   }
   return  "(" out ")"
 }
-function gitdown(     i,n,lines,blanks,last) {
+function gitdown(str,     i,n,lines,blanks,last,now) {
   stack(Finish)
   push(Finish,"")
-  n = split($0,lines,"\n")
-  inList=0
+  n = split(str,lines,"\n")
   while (i < n) {
-    do
+    do {
       i++
       now = what(lines,i,blanks)
-    while (now == "blanks") 
+    } while (now == "blanks") 
     if (now=="pre") {
        block("pre")
        i = pre(lines,i,n)
@@ -49,8 +46,8 @@ function gitdown(     i,n,lines,blanks,last) {
 }
 function list(lines,i,n,tag,
               pat,x,pre,point,line,
-              now,last,lvls,tmp) {
-  pat = "([ \t]*)(\+|[0-9]*\.)?(.*$)"
+              new,last,lvl,lvls,tmp) {
+  pat = "([ \t]*)(+|[0-9]*.)?(.*$)"
   while (1) {
     match(lines[i],pat,x)
     pre   = x[1]
@@ -69,7 +66,7 @@ function list(lines,i,n,tag,
         print "<li>"
     }
     print line
-    last = now
+    last = new
     i++
   }
   while(lvl-- > 1) 
@@ -77,17 +74,20 @@ function list(lines,i,n,tag,
   return i
 }              
 function pre(lines,i,n) {
-  do
+  do {
     print lines[i]
     i += 1
-  while (i<=n && lines[i])
+  } while (i<=n && lines[i])
   return i
 }
-function block(what,whatnext) {
+function block(what,whatnext,  old) {
   whatnext = whatnext ? whatnext : what
-  printf("</%s>", pop(Finish))
+  old = pop(Finish)
+  if (old)
+      printf("</%s>", old)
   push(Finish, whatnext)
-  print "<" what ">"
+  if (what)
+      print "<" what ">"
 }
 function stack(x)  { x[0]=0 }
 function top(x)  { return x[x[0]] }
