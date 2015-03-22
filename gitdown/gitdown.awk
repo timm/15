@@ -18,7 +18,22 @@ function init(str,d,     i,n,tmp,sep,out,key){
   }
   return  "(" out ")"
 }
-function gitdown(str,     i,n,lines,blanks,last,now) {
+function what(lines,i,blanks,     line) {
+  line = lines[i]
+  if (line       ~ /^$/)                 return "blank"
+  if (line       ~ /^(    |\t)[^\+0-9]/) return "pre"
+  if (line       ~ /^(    |\t)\+/)       return "ul"
+  if (line       ~ /^(    |\t)[0-9]/)    return "ol"
+  if (line       ~ /^#/)                 return hn(lines,i)
+  if (lines[i+1] ~ /^=/)                 return "h1"
+  if (lines[i+1] ~ /^-/)                 return "h2"
+  if (lines[i+1] ~ /^~/)                 return "h3"
+  if (blanks > 0 && \
+      lines[i]   ~ /^[A-Za-z0-9]/)       return "p"
+  return ""
+}
+function gitdown(str,
+                 i,n,lines,blanks,last,now) {
   stack(Finish)
   push(Finish,"")
   n = split(str,lines,"\n")
@@ -26,7 +41,7 @@ function gitdown(str,     i,n,lines,blanks,last,now) {
     do {
       i++
       now = what(lines,i,blanks)
-    } while (now == "blanks") 
+    } while (now == "blank") 
     if (now=="pre") {
        block("pre")
        i = pre(lines,i,n)
@@ -36,9 +51,11 @@ function gitdown(str,     i,n,lines,blanks,last,now) {
        block(now)
        i = list(lines,i,n,now)
        continue
-    } else if (now ~ /[123]/) {
-        block("h" now)
+    } else if (now ~ /h[123]/) {
+        block(now)
+        print inline(lines[i])
         i++
+        continue
     } else
         block(now)
     print inline(lines[i])
@@ -48,7 +65,7 @@ function list(lines,i,n,tag,
               pat,x,pre,point,line,
               new,last,lvl,lvls,tmp) {
   pat = "([ \t]*)(+|[0-9]*.)?(.*$)"
-  while (1) {
+  while (lines[i]) {
     match(lines[i],pat,x)
     pre   = x[1]
     point = x[2]
@@ -68,7 +85,7 @@ function list(lines,i,n,tag,
     print line
     last = new
     i++
-  }
+  } 
   while(lvl-- > 1) 
     print "</li></" tag ">"
   return i
@@ -90,24 +107,10 @@ function block(what,whatnext,  old) {
       print "<" what ">"
 }
 function stack(x)  { x[0]=0 }
-function top(x)  { return x[x[0]] }
-
+function top(x)    { return x[x[0]] }
 function push(a,x) { a[++a[0]] = x }
 function pop(a)    { return a[a[0]--]  }
 
-function what(lines,i,blanks,     line) {
-  line = lines[i]
-  if (line       ~ /^$/)                 return "blank"
-  if (line       ~ /^(    |\t)[^\+0-9]/) return "pre"
-  if (line       ~ /^(    |\t)\+/)       return "ul"
-  if (line       ~ /^(    |\t)[0-9]/)    return "ol"
-  if (line       ~ /^#/)                 return hn(lines,i)
-  if (lines[i+1] ~ /^=/)                 return "h1"
-  if (lines[i+1] ~ /^-/)                 return "h2"
-  if (lines[i+1] ~ /^~/)                 return "h3"
-  if (blanks > 0 )                       return "p"
-  return ""
-}
 function hn(lines,i) {
   gsub(/#*[ \t]*$/,"", lines[i])
   return gsub(/^#+/,"", lines[i])
