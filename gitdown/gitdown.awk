@@ -8,6 +8,7 @@
 # global abbreviations substituions
 # code preformat (python, awk)
 # cgi map url into ?
+# tables have odd even rows/cols and row0 col0
 # fenced code blocks
 # highlight
 # talk to git
