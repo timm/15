@@ -11,7 +11,7 @@
 # fenced code blocks
 # highlight
 # talk to git
-# catch outut to buffer. do subs on buffer
+# catch outut to buffer. do subs on buffer. e.g. title
 
 ###################################################
 ## this code recognizes the following markdown 
@@ -41,7 +41,7 @@ function blockElement(a,i,blanks,  n) {
 ## misc boring init stuff
 
 BEGIN {
-  LiTe = init(InlineElement,LiTes)
+  InLiners = init(InlineElement,ReName)
   init("head=head.html neck=neck.html "         \
        "foot=foot.html base=timm/15/markdow",
        Parts)
@@ -175,20 +175,20 @@ function inline(str,
     txt  = x[2]
     img  = x[1]
     if (img)
-      link = "<img src="url" alt=\""lites(txt)"\">"
+      link = "<img src="url" alt=\""inline1(txt)"\">"
     else
-      link = "<a href="url ">" lites(txt) "</a>"
+      link = "<a href="url ">" inline1(txt) "</a>"
     b4  = substr(str, 1, here-1)
-    out = out lites(b4) link
+    out = out inline1(b4) link
     str = substr(str, here + more) 
   }
-  return out lites(str)
+  return out inline1(str)
 }
 # Handle italic, bold, typewriter, sub,sup
-function lites(str,
+function inline1(str,
                x,envs,out,b4,on,
                here,more,env,txt,esc) {
-  while (match(str,LiTe,x)) {
+  while (match(str,InLiners,x)) {
     here = RSTART
     more = RLENGTH
     esc  = x[1]
@@ -197,7 +197,7 @@ function lites(str,
        txt = env
     else {
        on = envs[env] = 1 - envs[env]
-       txt = (on ? "<" : "</") LiTes[env] ">"
+       txt = (on ? "<" : "</") ReName[env] ">"
     }    
     b4  = substr(str, 1, here-1)
     out = out b4 txt
