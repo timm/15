@@ -11,6 +11,7 @@
 # fenced code blocks
 # highlight
 # talk to git
+# catch outut to buffer. do subs on buffer
 
 ###################################################
 ## this code recognizes the following markdown 
@@ -69,8 +70,7 @@ function init(str,d,     i,n,tmp,sep,out,key){
 #############################################
 ## main 
 function gitdown(type, str,     i,n,a,env) {
-    print "ff", type
-    print "<div class=contents>"
+  print "<div class=contents>"
   stack(env)
   n = split(str,a,"\n")
   while (i < n)
