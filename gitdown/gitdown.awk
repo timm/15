@@ -43,7 +43,7 @@ function blockElement(a,i,blanks,  n) {
 BEGIN {
   InLiners = init(InlineElement,ReName)
   init("head=head.html neck=neck.html "         \
-       "foot=foot.html base=timm/15/markdow",
+       "foot=foot.html base=timm/15/gitdown",
        Parts)
   # read entire file into $0  
   FS = RS = "_____" "_____"
