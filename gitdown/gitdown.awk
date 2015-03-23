@@ -158,13 +158,12 @@ function list(a,i,tag,
 # Handle hyperlinks
 
 function inline(str,
-                x,after,b4,out,i,pat,here,        \
-                more,link,url,txt,img,q) {
-  q="\""
+                x,after,b4,out,i,pat,here,
+                more,link,url,txt,img) {
   while (match(str,LinkP,x)) {
     here = RSTART
     more = RLENGTH
-    url  = q x[3] q
+    url  = "\"" x[3] "\""
     txt  = x[2]
     img  = x[1]
     if (img)
