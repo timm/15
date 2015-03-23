@@ -21,10 +21,17 @@ not surte
 ## Love
 
 i love icde cream
+i love icde cream
+i love icde cream
 
+i love icde cream
+i love icde cream
+i love icde cream 
+
+<img src="asdsa.jpg"> 
 ## Hate
 
-opposite of love squared
+opposite of loved!!squared!! and ~~uppe~~ asdsa
 
 ### Ambivlanece
 
@@ -42,5 +49,5 @@ asdkasd;asdasd
 adadsa
 sad
 
-![asda](asda) ![bbb](ccc)
+![asda](asda) ![b!!b!!b](ccc)
 _aa_
