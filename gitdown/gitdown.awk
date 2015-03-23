@@ -21,7 +21,7 @@ BEGIN {
   LinkP  = "(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
   ListP  = "([ \t]*)(+|[0-9]+.)?(.*$)"
 }
-function blockElement(a,i,blanks,  n) {
+function blockElement(a,i,blanks,  n) { 
   if (a[i+1] ~ /^=/)                    return "h1"
   if (a[i+1] ~ /^-/)                    return "h2"
   if (a[i+1] ~ /^~/)                    return "h3"
