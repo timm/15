@@ -16,7 +16,6 @@
 ## this code recognizes the following markdown 
 
 BEGIN {
-    print "FFF",FILENAME
   InlineElement= "_=em `=tt *=b !!=sup ~~=sub"
   LinkP  = "(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
   ListP  = "([ \t]*)(+|[0-9]+.)?(.*$)"
