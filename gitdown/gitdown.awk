@@ -22,18 +22,18 @@ BEGIN {
   ListP  = "([ \t]*)(+|[0-9]+.)?(.*$)"
 }
 function blockElement(a,i,blanks,  n) { 
-  if (a[i+1] ~ /^=/)                    return "h1"
-  if (a[i+1] ~ /^-/)                    return "h2"
-  if (a[i+1] ~ /^~/)                    return "h3"
-  if (a[i]   ~ /^$/)                  return "skip"
-  if (a[i]   ~ /^(    |\t)[^\+0-9]/)   return "pre"
-  if (a[i]   ~ /^[ \t]+\+/)             return "ul"
-  if (a[i]   ~ /^[ \t]+[0-9]./)         return "ol"
+  if (a[i+1] ~ /^=/)                 return   "h1"
+  if (a[i+1] ~ /^-/)                 return   "h2"
+  if (a[i+1] ~ /^~/)                 return   "h3"
+  if (a[i]   ~ /^$/)                 return "skip"
+  if (a[i]   ~ /^(    |\t)[^\+0-9]/) return  "pre"
+  if (a[i]   ~ /^[ \t]+\+/)          return   "ul"
+  if (a[i]   ~ /^[ \t]+[0-9]./)      return   "ol"
   if (a[i]   ~ /^#/) {
      gsub(/#+[ \t]*$/,"", a[i]) # zap trailing
      return gsub(/#/,"", a[i]) # count leading
   }
-  if (a[i]   ~ /^[^ \t]/ && blanks) return "p"
+  if (a[i]   ~ /^[^ \t]/ && blanks)  return "p"
   return "txt" # denotes normal paragraph text
 }
 
@@ -158,7 +158,7 @@ function list(a,i,element,
     i++
   } 
   while(lvl-- > 1) 
-    print "</li></" element ">"
+    print "</li>
   return i
 }              
 ## inline formatter
