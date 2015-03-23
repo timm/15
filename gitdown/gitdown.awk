@@ -18,10 +18,10 @@
 
 BEGIN {
   InlineElement= "_=em `=tt *=b !!=sup ~~=sub"
-  LinkP  = "(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
-  ListP  = "([ \t]*)(+|[0-9]+.)?(.*$)"
+  LinkP = "(!)?\\[([^\\]]+)\\]\\(([^\\)]+)\\)"
+  ListP = "([ \t]*)(+|[0-9]+.)?(.*$)"
 }
-function blockElement(a,i,blanks,  n) { 
+function blockTag(a,i,blanks,  n) { 
   if (a[i+1] ~ /^=/)                 return   "h1"
   if (a[i+1] ~ /^-/)                 return   "h2"
   if (a[i+1] ~ /^~/)                 return   "h3"
@@ -41,7 +41,7 @@ function blockElement(a,i,blanks,  n) {
 ## misc boring init stuff
 
 BEGIN {
-  InLiners = init(InlineElement,ReName)
+  InLineP = init(InlineElement,ReName)
   init("head=head.html neck=neck.html "         \
        "foot=foot.html base=timm/15/gitdown",
        Parts)
@@ -75,51 +75,43 @@ function gitdown(type, str,     i,n,a,env) {
   n = split(str,a,"\n")
   while (i < n)
       i = git_on_down(a,i,n,env)
-  if (! empty(env)  )
-      printf("</%s>\n",pop(env))
+  openClose(env)
   print "</div>"
 }
 function git_on_down(a,i,n,env,
-		                 element,j,todo,skippedLines) {
-  # step0: skipblanks
-  do { 
-     if ((++i) >= n) return n
+		                 tag,j,todo,skippedLines) {
+  do { # step0: skipblanks
+     i++
+     if (i >= n) return n
      skippedLines++
-     element = blockElement(a,i, skippedLines > 1)
-  } while (element == "skip")
+     tag = blockTag(a,i, skippedLines > 1)
+  } while (tag == "skip")
+  j = i   # where to get the next line?
   # step1: simplest case
-  if (element=="txt"){
-      print inline(a[i])
-      return i
+  if (tag == "txt") 
+    print inline(a[i]) 
+  else {
+    todo = tag
+    # step2: sometimes, adjust actions
+    if ( tag ~ /^[0-9]$/  ) todo = "h" tag 
+    if ( tag ~ /^h[123]$/ ) j = i + 1 
+    # step3: close old tag and open new
+    openClose(env,todo) 
+    # step4: call formatters
+    #        and maybe call block tag formatters
+    if      (tag == "pre")      j= pre(a,i)         
+    else if (tag ~ "^(ul|ol)$") j= list(a,i,tag) 
+    else    print inline(a[i])
   }
-  # step2: set standard actions
-  todo = element   # what is the current line?
-  j    = i      # where is the next line?
-
-  # step3: sometimes, adjust actions
-  if (element ~ /^[0-9]$/ ) {
-      todo = "h" element 
-  } else if (element ~ /^h[123]$/) {
-      j = i + 1 # i.e. skip a line
-  }
-  # step4: close old element and open new
-  if (! empty(env) )
-      print "</" pop(env)">"
-  print "<"  push(env, todo) ">"
-  # step5: call formatters
-  # step5a: maybe call block element formatters
-  if (element == "pre") {
-      j = pre(a,i)         
-  } else if (element ~ "^(ul|ol)$") {
-      j = list(a,i,element) 
-  } else { # step5b: else call inline formatter
-      print inline(a[i])
-  }
-  # step6: broacast what line to process next
+  # step5: broacast what line to process next
   return j
 }
-
-
+function openClose(env,todo) {
+  if (! empty(env) )
+      print "</" pop(env)">"
+  if (todo)
+      print "<"  push(env, todo) ">"
+}
 #############################
 ### special formaters
 
@@ -133,7 +125,7 @@ function pre(a,i) {
   return i
 }
 # nested lists
-function list(a,i,element,
+function list(a,i,tag,
               pat,x,pre,point,line,
               new,last,lvl,lvls,tmp) {
   while (a[i]) {
@@ -145,12 +137,12 @@ function list(a,i,element,
     if (new == last) {
         print "</li><li>"
     } else if (new > last) {
-        print "<" element "><li>"
+        print "<" tag "><li>"
         lvls[new] = ++lvl
     } else if (new in lvls) {
         tmp = lvls[new]
         while(lvl-- > tmp) 
-          print "</li></" element ">"
+          print "</li></" tag ">"
         print "<li>"
     }
     print line
@@ -158,7 +150,7 @@ function list(a,i,element,
     i++
   } 
   while(lvl-- > 1) 
-    print "</li>
+    print "</li>"
   return i
 }              
 ## inline formatter
@@ -188,7 +180,7 @@ function inline(str,
 function inline1(str,
                x,envs,out,b4,on,
                here,more,env,txt,esc) {
-  while (match(str,InLiners,x)) {
+  while (match(str,InLineP,x)) {
     here = RSTART
     more = RLENGTH
     esc  = x[1]
