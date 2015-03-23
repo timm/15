@@ -156,6 +156,7 @@ function list(a,i,tag,
 ## inline formatter
 
 # Handle hyperlinks
+
 function inline(str,
                 x,after,b4,out,i,pat,here,        \
                 more,link,url,txt,img,q) {
