@@ -34,7 +34,7 @@ function blockTag(a,i,blanks,  n) {
      gsub(/#+[ \t]*$/,"", a[i]) # zap trailing
      return gsub(/#/,"", a[i]) # count leading
   }
-  if (a[i]   ~ /^[^ \t]/ && blanks)  return "p"
+  if (a[i] ~ /^[^ \t]/ && blanks)  return "p"
   return "txt" # denotes normal paragraph text
 }
 
