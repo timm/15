@@ -9,7 +9,7 @@ https://www.youtube.com/watch?v=nIonZ6-4nuU.
 For example usage, see the _ok function (at end)
 """
 
-def items(x):
+def items(x):  
   """Convenience iterator. Recursively returns all
       non-list items within nested lists."""
   if isinstance(x,(list,tuple)):
@@ -21,8 +21,7 @@ def items(x):
     
 class ok:
   tries = fails = 0  #  tracks the record so far
-  def go(i,*tests):
-    "main function"
+  def __init__(i,*tests):
     for test in items(tests):
       ok.tries += 1
       try:
@@ -30,7 +29,7 @@ class ok:
       except Exception,e:
         ok.fails += 1
         print "# TRIES= %s FAIL= %s %s" % (
-              ok.tries,ok.fails,
+              ok.tries, ok.fails,
               "TEST= %s : %s" % (test.__name__,e))
         
 def noop():
@@ -42,10 +41,10 @@ def oops():
 
 def _ok():
   "Test the test engine"
-  ok().go(oops,noop,
-          lambda: 1+1,lambda: 4/0)
+  ok(oops,noop,
+     lambda: 1+1,lambda: 4/0)
   assert ok.tries == 4
   assert ok.fails == 2
-  print "Done"
 
-if __name__ == '__main__': _ok()
+if __name__ == '__main__':
+  _ok(); print "Success!!!"
