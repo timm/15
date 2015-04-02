@@ -10,31 +10,29 @@ For example usage, see the _ok function (at end)
 """
 
 ##-- top-level driver - ----------------------------
-
-class u:
+def ok(*lst):
+  for one in items(lst):
+    unittest(one)
+  return one
+  
+class unittest:
   tries = fails = 0  #  tracks the record so far
-  report= "# TRIES= %s FAIL= %s TEST= %s : %s" 
-  @staticmethod
-  def ok(*lst):
-    for one in items(lst): u(one)
-    return one
   def __init__(i,test):
-    u.tries += 1
+    unittest.tries += 1
     try:
       test()
     except Exception,e:
-      u.fails += 1
-      print u.report % (
-            u.tries,u.fails,test.__name__,e)
-  
+      unittest.fails += 1
+      i.report(e,test)
+  def report(i,e,test):
+    print "# TRIES= %s FAIL= %s TEST= %s : %s"  % (
+          unittest.tries, unittest.fails,
+          test.__name__, e)
 
 #---| misc support code |--------------------------
-def listp(x):
-  return isinstance(x,(list,tuple))
-
 def items(x):  
-  """Convenience iterator. Recursively returns all
-      non-list items within nested lists."""
+  "Recursively yield non-list items in nested list"
+  def listp(x): return isinstance(x,(list,tuple))
   if listp(x):
     for y in x:
       for z in items(y):
@@ -43,23 +41,21 @@ def items(x):
     yield x
 
 #---| example calls |------------------------------
-@u.ok # how to always run+test something at load time
-def noop():
-  "Never fails"
-  return True
+# how to always run+test something at load time
+@ok
+def noop(): return True
 
-@u.ok # how to always run+test something at load time
-def oops():
-  "Always fails"
-  5/0
+@ok 
+def oops(): 5/0
 
 def _ok():
-  "Test the test engine"
-  u.ok(oops,noop,
-     lambda: 1+1,lambda: 4/0)
-  assert u.tries == 6
-  assert u.fails == 3
+  ok(oops,noop,lambda: 1+1,lambda: 4/0)
+  ok(oops)
+  ok([oops,noop])
+  assert unittest.tries == 9
+  assert unittest.fails == 5
 
 #---| maybe, test the test engine |---------------
 if __name__ == '__main__':
-  _ok(); print "Success!!!"
+  _ok()
+  print "Success!!!"
