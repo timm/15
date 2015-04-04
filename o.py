@@ -1,17 +1,12 @@
-from __future__ import division,print_function
-sys.dont_write_bytecode = True
-
-from lib import *
+from has import *
 
 class o:
-  def __init__(i,**d): i.add(**d)
-  def __iadd__(i,**d) : i.__dict__.update(**d); return i
-  def has(i):
-    return {k:has(v) for k,v in i.__dict__}
-  def __repr__(i)   :
-    return showHas(i)
+  def __init__(i,**d) : i.add(**d)
+  def __iadd__(i,**d) : i.has().update(**d); return i
+  def has(i)          : i.__dict__
+  def __repr__(i)     : return string(i.has())
     
 
-print(o(name=21,
+o(name=21,
         wiehgt=o(aa=2,bb=3)))
       

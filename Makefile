@@ -1,11 +1,13 @@
 
 typo: gitting
 	- git status
+	- rm -f *.pyc
 	- git commit -am "stuff"
 	- git push origin master
 
 commit: gitting
 	- git status
+	- rm -f *.pyc
 	- git commit -a
 	- git push origin master
 
