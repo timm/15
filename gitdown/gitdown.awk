@@ -1,5 +1,4 @@
 # next:
-# super script subscript
 # nested lists
 # table of contents
 # refs
