@@ -1,7 +1,8 @@
-from has import *
+from __future__ import print_function
+from items import *
 
 def ok(*lst):
-  for one in has(lst):
+  for one in items(lst):
     unittest(one)
   return one
   
@@ -17,7 +18,7 @@ class unittest:
       unittest.fails += 1
       i.report(e,test)
   def report(i,e,test):
-    print "# TRIES= %s FAIL= %s TEST= %s : %s"  % (
+    print("# TRIES= %s FAIL= %s TEST= %s : %s"  % (
           unittest.tries, unittest.fails,
-          test.__name__, e)
+          test.__name__, e))
 

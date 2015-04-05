@@ -3,6 +3,6 @@
 # But first, we need to bootstrap
 # the stuff needed for testing
 
-from visit    import *
+from item     import *
 from string   import *
 from unittest import *
