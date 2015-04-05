@@ -1,0 +1,11 @@
+rm -rf okok.py 
+
+ls *ok.py | sed 's/\.py//' | 
+gawk '
+BEGIN {print "from unittest import *"}
+      {print "import " $1}
+END   {print "print \"TRIES:\",unittest.tries,\"FAILS:\",unittest.fails"}
+' > okok.py 
+
+python okok.py
+rm -rf okok.py 
