@@ -1,8 +1,10 @@
 """
 Settings idioms
 #1) stored in 1 global place (easier to mutate)
-#2) have defaults, which can be overridden
-#3) when overridden, can be reset to defaults
+#2) source code for making settings can be spread
+    all over the code
+#3) settings have defaults, which can be overridden
+#4) when overridden, can be reset to defaults
     by calling some function
 """
 
@@ -21,7 +23,13 @@ def setting(f):
   wrapper()
   return wrapper
 
-@setting # example of setting
+#2) i can write multiple settings functions X,Y,Z
+#   anywhere in the code; and these can be accessed
+#   via the.X and the.Y and the.Z;
+#3) and can be reset  to their redefaults by X(), Y(), Z();
+#4) these can be adjusted via e.g. STUDY(seed=2).
+
+@setting 
 def STUDY(**d): return o(
     seed    =   1,
     repeats = 100
@@ -29,20 +37,41 @@ def STUDY(**d): return o(
 
 @contextmanager
 def settings(f,**d):
-  "# 3) can be set, then reset to zero"
+  "First, tweak the settings. Then, reset to default."
   yield f(**d)
   f()
 
-@contextmanager
-def study(seed=None):
-  "Standard idioms around a study."
+def use(x,**y): return (x,y)
+def rseed(seed=None):
   random.seed(seed or the.STUDY.seed)
-  show = datetime.datetime.now().strftime
+
+@contextmanager
+def study(what,*usings):
+  """Standard idioms around a study.
+  1) BEFORE
+     1a) Print what the run is about.
+     1b) report date and time of run
+     1c) before run, make some special setings
+     1d) Set the random number seed to a known value.
+     1e) Print all the settings used in this run.
+  2) AFTER
+     2a) show total runtime
+     2b) reset settings to defaults
+  """
+  # 1) BEFORE
   print("\n#" + "-" * 50)
-  print("#", show("%Y-%m-%d %H:%M:%S"))
+  print("#",what)                         #1a 
+  show = datetime.datetime.now().strftime
+  print("#", show("%Y-%m-%d %H:%M:%S"))   #1b
   t1 = time.time()
-  print(the,"\n")
-  yield None
+  for (using, override) in usings:  
+    using(**override)                     #1c
+  rseed()                                 #1d
+  print(the,"\n")                         #1e
+  yield
+  # 2) AFTER
   t2 = time.time() # show how long it took to run
   print("\n" + "-" * 72)
-  print("# Runtime: %.3f secs" % (t2-t1))
+  print("# Runtime: %.3f secs" % (t2-t1)) #2a
+  for (using,_) in usings:
+    using()                               #2b
