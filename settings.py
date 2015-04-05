@@ -1,8 +1,8 @@
 """
 Settings idioms
-1) stored in one place (easier to mutate)
-2) have defaults, which can be overridden
-3) when overridden, can be reset to defaults
+#1) stored in 1 global place (easier to mutate)
+#2) have defaults, which can be overridden
+#3) when overridden, can be reset to defaults
     by calling some function
 """
 
@@ -11,17 +11,17 @@ from contextlib import contextmanager
 from o import *
 import random, datetime, time
 
-the=o() # idioms stored in place
+the=o() #1) idioms stored in global place
 
 def setting(f):
-  "Settings can be overridden and reset."
+  "#2) have defaults which can overridden."
   def wrapper(**d):
     tmp = the[f.__name__] = f().add(**d)
     return tmp
   wrapper()
   return wrapper
 
-@setting # example of making a setting function
+@setting # example of setting
 def STUDY(**d): return o(
     seed    =   1,
     repeats = 100
@@ -29,7 +29,7 @@ def STUDY(**d): return o(
 
 @contextmanager
 def settings(f,**d):
-  "Change some settings, then reset to defaults."
+  "# 3) can be set, then reset to zero"
   yield f(**d)
   f()
 

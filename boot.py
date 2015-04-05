@@ -1,8 +1,5 @@
-# After we load the test engine,
-# then everything needs tests.
-# But first, we need to bootstrap
-# the stuff needed for testing
+# Initial bootstrapping
 
-from item     import *
+from items    import *
 from string   import *
 from unittest import *

@@ -22,9 +22,6 @@ def settingsok():
       tmp = [random.gauss(the.DEMO.mu,
                            the.DEMO.sd)
              for _ in xrange(n)]
-      print(o(n= n, mu= sum(tmp)/n))
+      print('RESULTS:',
+            o(n= n, mu= sum(tmp)/n))
   assert the.DEMO.mu == 0
-
-
-  
-  
