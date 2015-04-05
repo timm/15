@@ -17,24 +17,26 @@ def COLOR(**d): return o(
   front='red'
   ).add(**d)
 
-assert the.DEMO.mu     == 0
-assert the.COLOR.front == 'red'
-with study("big purple people eaters",
+@ok
+def settingsok():
+  assert the.DEMO.mu     == 0
+  assert the.COLOR.front == 'red'
+  with study("big purple people eaters",
            use(DEMO, mu=2, repeats=1000000),
            use(COLOR,front='purple'),
            use(STUDY,seed=10)):
-  assert the.DEMO.mu == 2
-  assert the.COLOR.front == 'purple'
-  n   = the.DEMO.repeats
-  tmp = [random.gauss(the.DEMO.mu,
+    assert the.DEMO.mu == 2
+    assert the.COLOR.front == 'purple'
+    n   = the.DEMO.repeats
+    tmp = [random.gauss(the.DEMO.mu,
                       the.DEMO.sd)
-         for _ in xrange(n)]
-  print('RESULTS:',
+           for _ in xrange(n)]
+    print('RESULTS:',
         dict(seed= the.STUDY.seed,
              n   = n,
              mu  = sum(tmp)/n))
-assert the.DEMO.mu     == 0
-assert the.COLOR.front == 'red'
+  assert the.DEMO.mu     == 0
+  assert the.COLOR.front == 'red'
 
 """
 #--------------------------------------------------
