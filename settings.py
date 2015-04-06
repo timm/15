@@ -42,8 +42,6 @@ def settings(f,**d):
   f()
 
 def use(x,**y): return (x,y)
-def rseed(seed=None):
-  random.seed(seed or the.STUDY.seed)
 
 @contextmanager
 def study(what,*usings):
@@ -52,12 +50,11 @@ def study(what,*usings):
      1a) Print what the run is about.
      1b) report date and time of run
      1c) before run, make some special setings
-     1d) Set the random number seed to a known value.
-     1e) Print all the settings used in this run.
+     1d) Set the random number seed.
+     1e) Print the settings used in this run.
   2) AFTER
      2a) show total runtime
-     2b) reset settings to defaults
-  """
+     2b) reset settings to defaults"""
   # 1) BEFORE
   print("\n#" + "-" * 50)
   print("#",what)                         #1a 
@@ -66,7 +63,7 @@ def study(what,*usings):
   t1 = time.time()
   for (using, override) in usings:  
     using(**override)                     #1c
-  rseed()                                 #1d
+  rseed(the.STUDY.rseed)                  #1d
   print(the,"\n")                         #1e
   yield
   # 2) AFTER

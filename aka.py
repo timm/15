@@ -1,1 +1,5 @@
-def isa(x,y): return isinstance(x,y)
+import random
+
+isa   = isinstance
+r     = random.random
+rseed = random.seed
