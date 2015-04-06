@@ -33,3 +33,14 @@ files: .gitignore
 	@echo ".DS_Store" > $@
 	@echo ".pyc" >> $@
 	@git add $@
+
+view: $X.md
+	pandoc -s -f markdown -t man $X.md > /tmp/$X.man
+	man   /tmp/$X.man
+
+
+
+
+
+
+
