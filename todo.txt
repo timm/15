@@ -1,0 +1,2 @@
+debug watch
+  add all to watch so it sees all.

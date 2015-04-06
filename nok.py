@@ -1,5 +1,6 @@
+from __future__ import division,print_function
 from lib import *
-
+from n   import *
 
 @ok
 def _nok():
@@ -13,3 +14,13 @@ def _nok():
     n2 -= x
   assert nearly(n1.mu,   n2.mu),    "bad mu"
   assert nearly(n1.sd(), n2.sd()),  "bad sd"
+
+@ok
+def _cliffsDelta():
+  lst0 = [r() for _ in xrange(1000)]
+  f = 1.025
+  for n in range(10):
+    f = f**1.5
+    lst1 = [x*f for x in lst0]
+    expect = False if f < 1.2 else True
+    assert expect == cliffsDelta(lst0, lst1)

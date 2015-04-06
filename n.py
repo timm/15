@@ -1,5 +1,11 @@
 from __future__ import division,print_function
 from lib import *
+from cliffsDelta import *
+
+@setting
+def N(**d): return o(
+    dull = [0.147, 0.33, 0.474][0],
+    ).add(**d)
 
 class N(): 
   def __init__(i, inits=[], name=None,
@@ -31,3 +37,4 @@ class N():
     i.m2  -= delta*(x - i.mu)
     return i
   def __repr__(i): return string(i.__dict__)
+
