@@ -21,9 +21,9 @@ class Model:
     i.x = i.spec(tmp.x, i.xNums, i.xSyms)
     i.y = i.spec(tmp.y, i.yNums, i.ySyms)
   def spec(i, lst, nums, syms):
-    nump=lambda x: the.MODEL.num in x.name
+    nump = lambda x: the.MODEL.num in x.name
     for x in lst:
       x.like = the.MODEL.less not in x.name
-      where    = nums if nump(x) else syms
-      where   += [x]
+      where  = nums if nump(x) else syms
+      where += [x]
     return lst

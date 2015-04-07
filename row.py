@@ -3,7 +3,7 @@ from lib import *
 class Row:
   id=0
   def __init__(i,cells=[],t=None):
-    Row.id = i.id = Row.id + 1
+    Row.id  = i.id = Row.id + 1
     i.cells = cells
     i.table = t 
     if t:
