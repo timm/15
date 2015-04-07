@@ -1,3 +1,3 @@
-from models import *
+from modelsample import *
 
 Schaffer()
