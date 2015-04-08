@@ -9,16 +9,16 @@ def N(**d): return o(
 
 class N(): 
   def __init__(i, inits=[], name=None,
-               lo=None, hi=None):
+               like=True, lo=None, hi=None):
     i.n = i.mu = i.m2 = 0; 
-    i.w, i.name = 1, (name or 'N')
+    i.w, i.like, i.name = 1, like, (name or 'N')
     i.lo =  10**32 if lo is None else lo
     i.hi = -10**32 if hi is None else hi
     map(i.__iadd__,inits)
   def norm(i,x):
-    return (x - i.lo()) / (i.hi() - i.lo() +0.0001)
+    return (x- i.lo()) / (i.hi()- i.lo()+0.0001)
   def sd(i):
-    return 0 if i.n < 2 else (i.m2/(i.n - 1))**0.5
+    return 0 if i.n<2 else (i.m2/(i.n - 1))**0.5
   def pdf(i,z):
     return normpdf(i.mu,i.sd(),z) if i.sd() else 1
   def __iadd__(i,x):

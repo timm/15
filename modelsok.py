@@ -1,0 +1,3 @@
+from modelsample import *
+
+Schaffer()

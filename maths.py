@@ -1,10 +1,12 @@
 from __future__ import division
 import math
 
+e    = math.e
 pi   = math.pi
 log  = math.log
-sqrt = math.sqrt
+sin  = math.sin
 cos  = math.cos
+sqrt = math.sqrt
 
 def normpdf(mean, sd, x):
   var   = sd**2
