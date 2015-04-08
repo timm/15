@@ -2,7 +2,7 @@ import datetime
 
 """
 
-# Example of using Wrapper
+# Example of using Function Decorators
 
 ## Timing functions
 
