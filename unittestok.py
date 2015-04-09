@@ -11,7 +11,7 @@ def oops(): 5/0
 def unittestok():
   ok(oops,noop,lambda: 1+1,lambda: 4/0)
   ok(oops)
-  ok([oops,noop])
+  ok(oops,noop)
   assert unittest.tries == 10, 'unitest fail'
   assert unittest.fails == 5,  'unittest fail'
   

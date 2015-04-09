@@ -2,8 +2,7 @@ from __future__ import print_function
 from items import *
 
 def ok(*lst):
-  for one in items(lst):
-    unittest(one)
+  for one in lst: unittest(one)
   return one
   
 class unittest:
