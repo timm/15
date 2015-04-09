@@ -1,5 +1,4 @@
 from __future__ import print_function
-from items import *
 
 def ok(*lst):
   for one in lst: unittest(one)
@@ -20,4 +19,3 @@ class unittest:
     print("# TRIES= %s FAIL= %s TEST= %s : %s"  % (
           unittest.tries, unittest.fails,
           test.__name__, e))
-
