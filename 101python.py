@@ -10,25 +10,33 @@ class yourFirstClass:
  
 @ok
 def go1():
-  assert yourFirstClass(1).x == 1 
+  assert yourFirstClass(1).x() == 1 
 
 class Holds(dict):
   "Dictionary with a default value for unknown keys."
   def __init__(i, default):
-    if not  callable(default):
-      default = lambda : default
-    i.default = default
+    if callable(default):
+        print(1)
+        i.default=default
+    else:
+        print(2)
+        i.default = lambda :default
   def __getitem__(i, key):
-    if key in i: return i.get(key)
-    return i.setdefault(key,  i.default())    
+    if key in i: 
+      return i.get(key)
+    else:
+      new=i.default()
+      print("new",new)
+      return i.setdefault(key, new)   
 
 @ok
 def go0():
-  h = Holds(0)
-  assert 1 == 1 + h["a"]
-  assert h["a"] == 1
+  h = Holds(  1+2)
+  print(1+h["a"])
+  assert 1 == (1 + h["a"])
+  assert h["a"] == 0
 
-print(h['a'] + 1)
+go0()
 
 #################
 # your first function
@@ -40,8 +48,8 @@ def f1(n) :
      return  f1(n-2) + f1(n-1)
 
 @ok
-def go2():
-  assert f1(31) == 8222838654177922817725562880000000 
+def go2(): 
+  assert f1(31) == 2178309 
 
 def test3(): 
   "simple loop"
@@ -51,7 +59,7 @@ def test3():
   assert out == 'mfc'
     
 ########
-def funWithDefaults(n,name='tim', age=54,showsize=12):
+def funWithDefaults(n,name='tim', age=54,shoesize=12):
     return (n,name,age,shoesize)
     
 @ok 
