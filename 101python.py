@@ -2,8 +2,57 @@ from __future__ import print_function,division
 from unittest import *
 import math
 
-### lists
+import string
 
+#####
+@ok 
+def _string2():
+  assert 2 == string.find("banana", "na")
+
+@ok 
+def _string3():
+  "as above, but starts at 3"
+  assert 4 == string.find("banana", "na", 3)
+
+@ok 
+def _string4():
+  "fails: specificed range has no 'na'" 
+  assert -1  == string.find("banana", "na", 2,3)
+
+@ok 
+def _lowers():
+  assert 'abcdefghijklmnopqrstuvwxyz' ==  string.lowercase
+
+@ok 
+def isLower1(ch="a"):
+  assert string.find(string.lowercase, ch) != -1
+
+@ok 
+def isLower2(ch="b"):
+  assert ch in string.lowercase
+
+#################
+# your first function
+
+def f1(n) :
+   if n < 2 : 
+     return 1
+   else:
+     return  f1(n-2) + f1(n-1)
+
+@ok
+def go2(): 
+  assert f1(31) == 2178309 
+
+@ok
+def test3(): 
+  "simple loop"
+  out = ""
+  for x in ['m','f','c']:
+    out += x
+  assert out == 'mfc'
+
+### lists
 @ok
 def _slice():
   a=['a','b','c','d']
@@ -28,37 +77,35 @@ def _clones():
 
 @ok 
 def _dict():
-  inventory1 = {'apples': 430,
-               'bananas': 312, 
-               'oranges': 525,
-               'pears': 217}
+  inventory1 = {'apples' : 430,
+                'bananas': 312, 
+                'oranges': 525,
+                'pears'  : 217}
   inventory2 = dict(apples  = 430,
                     bananas = 312, 
                     oranges = 525,
                     pears   = 217)
   assert inventory1 == inventory2 
   del inventory1['pears']
-  assert inventory1 == {'apples': 430,
+  assert inventory1 == {'apples' : 430,
                         'bananas': 312, 
                         'oranges': 525 }
   assert inventory1.keys() == [
             'apples', 'oranges','bananas']
   assert inventory1.values() == [430, 525, 312]
-  
-  assert  [('apples', 430),
+  assert  [('apples' , 430),
            ('oranges', 525),
            ('bananas', 312)] == inventory1.items()
-  print({
-         key:value for key,value in inventory1.items()})
-  assert inventory1 == {
-         key:value for key,value in inventory.items()}
+  assert inventory1 == {key:value for key,value 
+                        in inventory1.items()}
     
+@ok
 def _counts():
   seen = {}
   for letter in "Mississippi":
     seen[letter] = seen.get(letter, 0) + 1
-    print(seen)
-    
+  assert seen == {'i': 4, 'p': 2, 's': 4, 'M': 1}
+
 class yourFirstClass:
   "init is called when created"
   def __init__(i,x) : i.mine = x
@@ -72,45 +119,33 @@ def go1():
 class Holds(dict):
   "Dictionary with a default value for unknown keys."
   def __init__(i, default):
-    if callable(default):
-        i.default=default
+    if callable(default): 
+      i.default=default
     else: 
-        i.default = lambda :default
+      i.default = lambda :default
   def __getitem__(i, key):
     if key in i: 
       return i.get(key)
-    else:
-      new=i.default() 
-      return i.setdefault(key, new)   
+    else: 
+      return i.setdefault(key, i.default() )  
 
 @ok
 def go0():
-  h = Holds( lambda : 1+2)
-  assert h["a"] + 2 == 5
-  h["b"] = 2
-  assert(h["b"] == 2) 
-   
+  h = Holds(0)
+  for letter in "Mississippi":
+    h[letter] += 1
+  assert h == {'i': 4, 'p': 2, 's': 4, 'M': 1}
 
-#################
-# your first function
-
-def f1(n) :
-   if n < 2 : 
-     return 1
-   else:
-     return  f1(n-2) + f1(n-1)
+########
+def odd(x)      : return x % 2 == 1
+def largeOdd(x) : return odd(x) and x > 10 
 
 @ok
-def go2(): 
-  assert f1(31) == 2178309 
+def go5():
+  "example of list comprehension"
+  assert [63, 69, 75, 81, 87, 93, 99, 105] == [
+          x for x in xrange(60,110,3) if largeOdd(x)]
 
-def test3(): 
-  "simple loop"
-  out = ""
-  for x in ['m','f','c']:
-    out += x
-  assert out == 'mfc'
-    
 ########
 def funWithDefaults(n,name='tim', age=54,shoesize=12):
     return (n,name,age,shoesize)
@@ -131,18 +166,6 @@ def go4():
           {'age':54,'name':'tim','shoesize':12})
 
 ########
-
-def odd(x)      : return x % 2 == 1
-def largeOdd(x) : return odd(x) and x > 10 
-
-@ok
-def go5():
-  "example of list comprehension"
-  assert [63, 69, 75, 81, 87, 93, 99, 105] == [
-          x for x in xrange(60,110,3) if largeOdd(x)]
-
-########
-
 @ok 
 def go6():
    lst = [8347, 6230, 923834, 1, 404, 993]
@@ -173,8 +196,6 @@ def go8():
   out = [x for x in bigguns(lst, 1000)]
   assert out == [6230, 8347, 923834]
 
-def dict1(d):  print ["c"]
-
 def sorteddict(d):
   "example of walking a dictinary in key sort order"
   for key in sorted(d.keys()):
@@ -186,37 +207,5 @@ def go9():
   assert [key for key,_ in sorteddict(d)] == [
          'city','country','state','zip']
 
-import string
-  
-def _string2():
-  "finds 'na' at '2' (i.e. third arg)"
-  print(string.find("banana", "na"))
 
-def _string3():
-  "as above, but starts at 3"
-  print(string.find("banana", "na", 3))
-
-def _string4():
-  "fails: specificed range has no 'na'"
-  print(string.find("banana", "na", 2,3))
-
-def _whites():
-  print("[" + string.whitespace+"]")
-  for ch in string.whitespace:
-    print(ord(ch),"["+ch+"]")
-
-def _lowers():
-  print(string.lowercase)
-
-def isLower1(ch="a"):
-  print(string.find(string.lowercase, ch) != -1)
-
-def isLower2(ch="b"):
-  print(ch in string.lowercase)
-
-def isLower3(ch="c",banner="hekko there"):
-  print(banner,'a' <= ch <= 'z')
-
-def _test1():
-  isLower3(banner="work more on python",ch="D")
 

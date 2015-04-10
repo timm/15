@@ -36,5 +36,5 @@ class N():
     i.mu  -= delta/i.n
     i.m2  -= delta*(x - i.mu)
     return i
-  def __repr__(i): return string(i.__dict__)
+  def __repr__(i): return rstring(i.__dict__)
 

@@ -1,5 +1,5 @@
 from items import *
-from string import *
+from rstring import *
 
 class Emp:
   def __init__(i,who='tom'):
@@ -28,5 +28,5 @@ for y in items(lst):
   
 
 
-print string([lst,[[[lst],lst],lst],[lst]])
+print rstring([lst,[[[lst],lst],lst],[lst]])
 

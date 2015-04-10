@@ -1,7 +1,7 @@
 from items import *
 import pprint
 
-def string(x):
+def rstring(x):
   "Pretty print nested content."
   def skip(x):
     return str(x)[0] == "_"
