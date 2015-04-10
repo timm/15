@@ -37,19 +37,18 @@ def _dict():
                     oranges = 525,
                     pears   = 217)
   assert inventory1 == inventory2 
-
   del inventory1['pears']
   assert inventory1 == {'apples': 430,
                         'bananas': 312, 
                         'oranges': 525 }
+  assert inventory1.keys() == [
+            'apples', 'oranges','bananas']
+  assert inventory1.values() == [430, 525, 312]
+  
+  assert  [('apples', 430),
+           ('oranges', 525),
+           ('bananas', 312)] == inventory1.items()
   exit()
-  assert inventory1.keys() == (
-            'apples','bananas', 'oranges')
-  exit()
-  assert inventory1.values() == (430,312,525)
-  assert  (('apples', 430),
-           ('bananas', 312), 
-           ('oranges', 525)) == inventory1.items()
   assert inventory1 == {
          key:value for key,value in inventory.items()}
     
