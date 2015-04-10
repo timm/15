@@ -48,7 +48,8 @@ def _dict():
   assert  [('apples', 430),
            ('oranges', 525),
            ('bananas', 312)] == inventory1.items()
-  exit()
+  print({
+         key:value for key,value in inventory1.items()})
   assert inventory1 == {
          key:value for key,value in inventory.items()}
     
