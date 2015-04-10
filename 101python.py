@@ -9,7 +9,7 @@ def _slice():
   a=['a','b','c','d']
   assert 'a'           == a[0]
   assert ['b','c','d'] == a[1:]
-  assert ['a','b','c'] == a[:2]
+  assert ['a','b'] == a[:2]
   assert 'd'           == a[-1]
 
 @ok     
@@ -26,19 +26,32 @@ def _clones():
   a[0]=100
   assert b == [1,2,3] 
 
+@ok 
 def _dict():
-  inventory = {'apples': 430,
-               'bananas': 312, 'oranges': 525,
+  inventory1 = {'apples': 430,
+               'bananas': 312, 
+               'oranges': 525,
                'pears': 217}
-  print("\n:all",inventory)
-  del inventory['pears']
-  print("\n:less",inventory)
-  print("\n:keys",inventory.keys())
-  print("\n:values",inventory.values())
-  print("\n:parts",inventory.items())
-  print("\n:iterate")
-  for key,value in inventory.items():
-    print(":key",key,":value",value)
+  inventory2 = dict(apples  = 430,
+                    bananas = 312, 
+                    oranges = 525,
+                    pears   = 217)
+  assert inventory1 == inventory2 
+
+  del inventory1['pears']
+  assert inventory1 == {'apples': 430,
+                        'bananas': 312, 
+                        'oranges': 525 }
+  exit()
+  assert inventory1.keys() == (
+            'apples','bananas', 'oranges')
+  exit()
+  assert inventory1.values() == (430,312,525)
+  assert  (('apples', 430),
+           ('bananas', 312), 
+           ('oranges', 525)) == inventory1.items()
+  assert inventory1 == {
+         key:value for key,value in inventory.items()}
     
 def _counts():
   seen = {}
