@@ -1,0 +1,129 @@
+zaps: @ - rm -f *.pyc
+
+files: .gitignore
+
+.gitignore :
+	@echo ".DS_Store" > $@
+	@echo ".pyc" >> $@
+	@git add $@
+	
+your:
+	git config --global user.name "Your name"
+	git config --global user.email your@email.address
+	
+timm:
+	git config --global user.name "Tim Menzies"
+	git config --global user.email tim.menzies@gmail.com
+	
+	## Begin config
+
+WikiName=  15.wiki#
+WikiDir =  ../..#
+Wiki    =  $(WikiDir)/$(WikiName)
+WikiGit =  https://github.com/timm/$(WikiName).git#
+Me      =  Tim Menzies#
+MyEmail =  tim.menzies@gmail.com#
+MyHeader1= [Home](Home) [[home.png]] | [Data](Data) [[data.png]] | Leaner Data Mining |#
+MyHeader2= | --- | --- | --- |#
+
+## End config
+## (everything from here down should be generic)
+
+#################################################
+
+pys  = $(subst .py,.md,$(shell ls *.py;))#
+mds  = $(Wiki)/$(subst .md ,.md $(Wiki)/,$(pys))#
+
+.PHONY: all typo commit update status giting reset \
+        timm save dirs publish tests test wikiCommits
+
+define commits
+HERE=$${1:-$$PWD}
+cd $$HERE
+git config --global credential.helper cache
+git config credential.helper 'cache --timeout=3600'
+git config user.name "$(Me)"
+git config user.email "$(MyEmail)"
+git add *
+git commit -am "stuff"
+git push origin master
+endef 
+
+define p2md
+  BEGIN           {
+         print ""
+         print "$(MyHeader1)"  
+         print "$(MyHeader2)"
+         print ""
+         First = 1      
+         In = 1
+  }         
+  /^"""</,/^>"""/ {  next } 
+  /^"""/          {  In = 1 - In       
+                     if (In)            
+                       print "````python"
+                     else          
+                       if (First)   
+                         First = 0   
+                       else     
+                         print "````"  
+                     next }       
+  ! First { print $$0 }       
+  END     { if (In) print "````"  }
+endef
+
+export commits 
+export p2md
+
+all:   typo
+
+typo: ready  
+	git status
+	git commit -am "stuff" || true
+	git push origin master
+
+commit: ready   save
+
+ready: gitting
+
+gitting:
+	git config --global credential.helper cache
+	git config credential.helper 'cache --timeout=3600'
+
+your:
+	git config --global user.name "Your name"
+	git config --global user.email your@email.address
+	
+timm:
+	git config --global user.name "Tim Menzies"
+	git config --global user.email tim.menzies@gmail.com
+	
+	
+save:  
+  bash tmp/commits
+	@- git status
+	@- git commit -a
+	@- git push origin master
+
+update:; @- git pull origin master
+status:; @- git status
+
+reset:
+	cd $(WikiDir); rm -rf $(WikiName); git clone $(WikiGit)
+
+publish: $(mds) wikiCommits 
+
+wikiCommits: tmp/commits
+	rsync -u  wiki/* $(Wiki) # cause cp -u not in Mac/OS
+	bash tmp/commits $(Wiki) 
+
+tmp: 
+	@echo "/tmp" > .gitignore
+	@- mkdir -p $@
+
+tmp/p2md.awk: tmp ; echo "$$p2md" > $@ 
+tmp/commits : tmp ; @echo "$$commits" > $@
+
+$(Wiki)/%.md: %.py tmp/p2md.awk
+	@awk -f tmp/p2md.awk $< > $@;
+	

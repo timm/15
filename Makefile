@@ -1,9 +1,18 @@
-typo: ready  
-	git status
-	git commit -am "stuff" || true
-	git push origin master
+typo:  ready 
+	@- git status
+	@- git commit -am "saving"
+	@- git push origin master
+	
+commit:  ready 
+	@- git status
+	@- git commit -a 
+	@- git push origin master
 
-ready: gitting   
+update:; @- git pull origin master
+status:; @- git status
+
+ready: zaps gitting
+zaps : ; @- rm -rf *.pyc  
 
 gitting:
 	git config --global credential.helper cache
@@ -17,11 +26,4 @@ timm:
 	git config --global user.name "Tim Menzies"
 	git config --global user.email tim.menzies@gmail.com
 
-save: 
-	@- rm -rf *.pyc
-	@- git status
-	@- git commit -a
-	@- git push origin master
 
-update:; @- git pull origin master
-status:; @- git status
