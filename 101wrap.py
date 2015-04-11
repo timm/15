@@ -206,7 +206,6 @@ class Row:
     assert cells, "needs some cells"
     Row.id = i.id = Row.id + 1 #get a  unique id
     i.cells = cells 
-    
   def __eq__(i,j): return i.id == j.id "i == j"
   def __ne__(i,j): return i.id != j.id "i != j"
   def value(i):
