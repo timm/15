@@ -148,10 +148,10 @@ can cache things from many different functions.
 
 def cache(f):
   "Caching, simple case, no mirroring."
-  what = lambda i: (f.__name__,i.id)
+  name = f.__name__  
   def wrapper(i):
     if hasnot(i,"_cache"): i._cache = {}  
-    key = what(i)
+    key = (name, i.id)
     if key in i._cache:
       x = i._cache[key]
     else:
@@ -162,14 +162,13 @@ def cache(f):
   
 def cache2(f):
   "Cache mirrored properties."
-  what = lambda i,j: (f.__name__,i.id, j.id)
+  name = f.__name__
   def wrapper(i,j):
     if hasnot(i,"_cache"): i._cache = {}  
     if hasnot(j,"_cache"): j._cache = {}
     if i.id > j.id: 
       i,j = j,i # ids now sorted Vv
-      
-    key = what(i,j)  # what to cache
+    key = (name, i.id, j.id) 
     if key in i._cache:
       x = i._cache[key]
     elif key in j._cache:
