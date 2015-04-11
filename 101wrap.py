@@ -220,7 +220,7 @@ class Row:
   def __lt__(i,j):
     "Implement i < j (used in sorting)."
     return i.score() < j.score()
-  @cache # single argument cache
+  #@cache # single argument cache
   def score(i): 
     return i.value()
   @cache2 # doube argument symmetric caching
