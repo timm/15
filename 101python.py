@@ -1,55 +1,97 @@
+"""
+
 # 101python.py: some basic Python examples
 
-# bef
+How to learn Python:
 
-from unittest import *
+1. read Python code
+2. run Python code
+3. read Stackoverflow.com, a lot. e.g
+   Want to know how to check if a file
+   exits? Then Google "stackoverflow python 
+   how to check if a file exists".
 
-# This Python 2 code. Which is fine for most
-# things but the Pyton 3 division and print
-# stuff is better.
+Anyway, on with this file's code....
+_________________________________________________
+
+## Standard start up stuff
+
+This Python 2 code. Which is fine for most
+things but the Pyton 3 division and print
+stuff is better.
+
+"""
 from __future__ import print_function,division
-import math
+"""
 
-import string
+Grab some standard utils
 
-#####
+"""
+import math,string
+"""
+
+BEFORE reading this code, go away and
+read up on the ok.py test engine
+
+"""
+from ok import *
+"""
+
+The rest of this code contains functions
+that are called at load time (these are
+decorated with "@ok"). Every "assert"
+statements checks that the expected
+thing is happenning.
+
+_________________________________________________
+
+##  Some String Manipulation
+
+"""
 @ok 
 def _string2():
   assert 2 == string.find("banana", "na")
 
 @ok 
 def _string3():
-  "as above, but starts at 3"
+  "As above, but starts at 3"
   assert 4 == string.find("banana", "na", 3)
 
 @ok 
 def _string4():
-  "fails: specificed range has no 'na'" 
+  "Fails: specificed range has no 'na'" 
   assert -1  == string.find("banana", "na", 2,3)
 
 @ok 
 def _lowers():
-  assert 'abcdefghijklmnopqrstuvwxyz' ==  string.lowercase
+  "Shows a useful property of 'string'"
+  assert string.lowercase == 'abcdefghijklmnopqrstuvwxyz'  
 
 @ok 
 def isLower1(ch="a"):
+  "A simple test."
   assert string.find(string.lowercase, ch) != -1
 
 @ok 
 def isLower2(ch="b"):
+  "We lower case?"
   assert ch in string.lowercase
 
-#################
-# your first function
+"""
+_________________________________________________
 
+## Fun with Functions
+
+"""
 def f1(n) :
-   if n < 2 : 
-     return 1
-   else:
-     return  f1(n-2) + f1(n-1)
+  "Fibanacci. Slow. Want faster? See 101wrap.py."
+  if n < 2 : 
+    return 1
+  else:
+    return  f1(n-2) + f1(n-1)
 
 @ok
-def go2(): 
+def f1ok(): 
   assert f1(31) == 2178309 
 
 @ok
@@ -60,10 +102,37 @@ def test3():
     out += x
   assert out == 'mfc'
 
-### lists
+# Functions can have named arguments, with defaults.
+
+def funWithDefaults(n,name='tim', age=54,shoesize=12):
+    return (n,name,age,shoesize)
+    
+@ok 
+def go3():
+  assert (10,'tom',20,12) == funWithDefaults(
+                           10,age=20,name='tom') 
+                           
+# Internally, those args are dictionaries.
+def callingVars(*lst,**dic):
+  return (lst,dic)
+  
+@ok 
+def go4(): 
+  assert callingVars(
+          1,2,3,name='tim',age=54,shoesize=12) == (
+          (1,2,3), 
+          {'age':54,'name':'tim','shoesize':12})
+          
+"""
+_________________________________________________
+
+## Lists, coping, slices
+
+"""
 @ok
 def _slice():
-  a=['a','b','c','d']
+  "Accessing"
+  a = ['a','b','c','d']
   assert 'a'           == a[0]
   assert ['b','c','d'] == a[1:]
   assert ['a','b'] == a[:2]
@@ -71,6 +140,7 @@ def _slice():
 
 @ok     
 def _alias():
+  "Side-effect on updates."
   a    = [1, 2, 3]
   b    = a
   a[0] = 100
@@ -78,13 +148,21 @@ def _alias():
 
 @ok 
 def _clones():
+  "Deep copy."
   a = [1, 2, 3]
   b = a[:]
   a[0]=100
   assert b == [1,2,3] 
 
+"""
+_________________________________________________
+
+## Dictionaries
+
+"""
 @ok 
 def _dict():
+  "Adding, deleting stuff."
   inventory1 = {'apples' : 430,
                 'bananas': 312, 
                 'oranges': 525,
@@ -109,11 +187,18 @@ def _dict():
     
 @ok
 def _counts():
+  "Using a dict to count character frequencies
   seen = {}
-  for letter in "Mississippi":
-    seen[letter] = seen.get(letter, 0) + 1
+  for x in "Mississippi":
+    seen[x] = seen.get(x, 0) + 1
   assert seen == {'i': 4, 'p': 2, 's': 4, 'M': 1}
 
+"""
+_________________________________________________
+
+## Classes and sub-classes
+
+"""
 class yourFirstClass:
   "init is called when created"
   def __init__(i,x) : i.mine = x
@@ -124,27 +209,34 @@ class yourFirstClass:
 def go1():
   assert yourFirstClass(1).x() == 1 
 
+# Subclassing
+
 class Holds(dict):
   "Dictionary with a default value for unknown keys."
   def __init__(i, default):
-    if callable(default): 
-      i.default=default
-    else: 
-      i.default = lambda :default
+    i.default = default
   def __getitem__(i, key):
     if key in i: 
       return i.get(key)
     else: 
-      return i.setdefault(key, i.default() )  
+      return i.setdefault(key, i.default)  
 
 @ok
 def go0():
   h = Holds(0)
-  for letter in "Mississippi":
-    h[letter] += 1
+  for x in "Mississippi":
+    h[x] += 1
   assert h == {'i': 4, 'p': 2, 's': 4, 'M': 1}
 
-########
+"""
+_________________________________________________
+
+## Declaractive programming in Python
+
+Build up the processing by writing little primitives
+that get combined by other functions.
+
+"""
 def odd(x)      : return x % 2 == 1
 def largeOdd(x) : return odd(x) and x > 10 
 
@@ -154,34 +246,20 @@ def go5():
   assert [63, 69, 75, 81, 87, 93, 99, 105] == [
           x for x in xrange(60,110,3) if largeOdd(x)]
 
-########
-def funWithDefaults(n,name='tim', age=54,shoesize=12):
-    return (n,name,age,shoesize)
-    
-@ok 
-def go3():
-  assert (10,'tom',20,12) == funWithDefaults(
-                           10,age=20,name='tom') 
-                           
-def callingVars(*lst,**dic):
-  return (lst,dic)
-  
-@ok 
-def go4(): 
-  assert callingVars(
-          1,2,3,name='tim',age=54,shoesize=12) == (
-          (1,2,3), 
-          {'age':54,'name':'tim','shoesize':12})
 
-########
+## "Iterators" let you seperate data filtering from
+## data usage. Iterator functions use "yield" and not
+## "return"
+
 @ok 
 def go6():
+  "Without iterators."
    lst = [8347, 6230, 923834, 1, 404, 993]
    out = [x for x in lst if x > 1000]
    assert out == [8347, 6230, 923834]
    
 def bigguns(lst,n):
-  "defining inerators"
+  "Defining iterator"
   lst = sorted(lst)
   for x in lst:
     if x > n:
@@ -189,7 +267,7 @@ def bigguns(lst,n):
 
 @ok
 def go7():
-  "using iterators"
+  "Using iterators"
   lst = [8347, 6230, 923834, 1, 404, 993]
   out = []
   for x in bigguns(lst, 1000):
@@ -214,6 +292,5 @@ def go9():
   d = dict(zip=27615,city='raleigh',state='nc',country='usa')
   assert [key for key,_ in sorteddict(d)] == [
          'city','country','state','zip']
-
 
 
