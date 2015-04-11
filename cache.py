@@ -23,8 +23,7 @@ def cache2(f):
   def wrapper(i,j):
     if hasnot(i,"_cache"): i._cache = {}  
     if hasnot(j,"_cache"): j._cache = {}
-    if i.id > j.id: 
-      i,j = j,i # ids now sorted Vv
+    i,j = i,j if i.id <= j.id else j,i
     key = (name, i.id, j.id) 
     if key in i._cache:
       x = i._cache[key]
