@@ -1,5 +1,13 @@
-from __future__ import print_function,division
+# 101python.py: some basic Python examples
+
+# bef
+
 from unittest import *
+
+# This Python 2 code. Which is fine for most
+# things but the Pyton 3 division and print
+# stuff is better.
+from __future__ import print_function,division
 import math
 
 import string
