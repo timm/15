@@ -206,21 +206,21 @@ class Row:
     assert cells, "needs some cells"
     Row.id = i.id = Row.id + 1 #get a  unique id
     i.cells = cells 
-  def __hash__(i): return i.id
-  def __eq__(i,j): return i.id == j.id
-  def __ne__(i,j): return i.id != j.id
+    
+  def __eq__(i,j): return i.id == j.id "i == j"
+  def __ne__(i,j): return i.id != j.id "i != j"
   def value(i):
     """Some slow domain specific value function 
     which we'll sub-class for other row types."""
     return slowFib(round((i[0] + i[-1]) / 2.0))
   def __getitem__(i,key): 
-    "Impments row[i] (easy access to cells)."
+    "Implements row[i] (easy access to cells)."
     return i.cells[key]
   def __sub__(i,j):
-    "Implement i - j (the distance calc)."
+    "Implements i - j (the distance calc)."
     return i.dist(j)
   def __lt__(i,j):
-    "Implement i < j (used in sorting)."
+    "Implements i < j (used in sorting)."
     return i.score() < j.score()
   @cache # single argument cache
   def score(i): 
