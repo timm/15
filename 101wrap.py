@@ -167,7 +167,8 @@ def cache2(f):
     if hasnot(i,"_cache"): i._cache = {}  
     if hasnot(j,"_cache"): j._cache = {}
     if i.id > j.id: 
-      i,j = j,i # ids now sorted
+      i,j = j,i # ids now sorted Vv
+      
     key = what(i,j)  # what to cache
     if key in i._cache:
       x = i._cache[key]
