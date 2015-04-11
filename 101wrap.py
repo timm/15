@@ -203,7 +203,7 @@ different for each row.
 class Row:
   id=0
   def __init__(i, cells=[]):
-    Row.id = i.id = Row.id + 1
+    Row.id = i.id = Row.id + 1 #get a  unique id
     i.cells = cells 
   def __eq__(i,j) : return i.id == j.id
   def __ne__(i,j) : return i.id != j.id
