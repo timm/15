@@ -123,7 +123,7 @@ def closest(row, rows):
   "What row is closest within rows?" 
   d, best = 10**32, None
   for x in rows:
-    if x.id != row.id:
+    if x != row:
       tmp = row - x # note: distance is "-"
       if tmp < best:
         d, best = tmp, x
@@ -202,14 +202,16 @@ different for each row.
 """
 class Row:
   id=0
-  def __init__(i, cells=[]):
+  def __init__(i, cells):
+    assert cells, "needs some cells"
     Row.id = i.id = Row.id + 1 #get a  unique id
     i.cells = cells 
-  def __eq__(i,j) : return i.id == j.id
-  def __ne__(i,j) : return i.id != j.id
+  def __hash__(i): return i.id
+  def __eq__(i,j): return i.id == j.id
+  def __ne__(i,j): return i.id != j.id
   def value(i):
-    """Some slow domain specific value function
-    which we can sub-class for different rows."""
+    """Some slow domain specific value function 
+    which we'll sub-class for other row types."""
     return slowFib(round((i[0] + i[-1]) / 2.0))
   def __getitem__(i,key): 
     "Impments row[i] (easy access to cells)."
@@ -220,13 +222,14 @@ class Row:
   def __lt__(i,j):
     "Implement i < j (used in sorting)."
     return i.score() < j.score()
-  #@cache # single argument cache
+  @cache # single argument cache
   def score(i): 
     return i.value()
   @cache2 # doube argument symmetric caching
-  def dist(i,j):  
-    tmp = sum([(x -y)**2  for x,y in zip(i,j)])
-    return tmp**0.5 
+  def dist(i,j): 
+    "Returns a number 0..1"
+    tmp = [(x -y)**2  for x,y in zip(i,j)]
+    return sum(tmp)**0.5/ len(tmp)**0.5
 
 def rowDemo():
   import random
