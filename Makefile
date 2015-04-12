@@ -1,3 +1,5 @@
+Make = $(MAKE) --no-print-directory #
+
 typo:  ready 
 	@- git status
 	@- git commit -am "saving"
@@ -11,8 +13,8 @@ commit:  ready
 update:; @- git pull origin master
 status:; @- git status
 
-ready: zaps gitting
-zaps : ; @- rm -rf *.pyc  
+ready: zaps gitting 
+zaps : ; @- rm -rf *.pyc   
 
 gitting:
 	git config --global credential.helper cache

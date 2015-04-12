@@ -1,4 +1,4 @@
-<img width=600 src="https://raw.githubusercontent.com/timm/15/master/img/banner.jpg">
+<img width=800 src="https://raw.githubusercontent.com/timm/15/master/img/banner.jpg">
 
 |Home|About|
 |----|-----|
