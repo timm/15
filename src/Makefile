@@ -9,13 +9,9 @@ update: ;cd ..; $(Make) update
 status: ;cd ..; $(Make) statsus
 
 define p2md
-  BEGIN           {
-	 gsub(/\.py$$/, name); 
+  BEGIN           {  
          print ""
-         print "title: " name
-         print "layout: default"
-         print "---"
-	 print ""
+         print "# " name
          First = 1      
          In = 1
   }         
@@ -47,5 +43,5 @@ $(out)/%.md: %.py etc/header.txt etc/footer.txt etc/p2md.awk
 	@echo "making... $<"
 	@cat etc/header.txt > $@
 	@awk -f etc/p2md.awk -v name="$<" $< >> $@;
-	@car etc/footer.text >> $@
+	@cat etc/footer.txt >> $@
 	@git add $@
