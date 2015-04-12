@@ -5,14 +5,16 @@
 
 ["_There are some who call me... Tim?_"](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
-## About This Site
+## Under Construction
 
-This site is a "howto" guide on combine SBSE and data mining tools
-to explore models. It is/was written Summer 2015 for _Automated
-(Model-Based) Software Engineering_, an CS NcState graduate class.
-Share and enjoy.
+This site will be a "howto" guide on combine SBSE and data mining tools
+to explore models. Right now, its much less than that. But it will be the
+toolkit used for the Fall 2015 graduate subject _Automated
+(Model-Based) Software Engineering_.
+Share and enjoy... but not quite yet.
 
-This site comprises:
+## Contents
+
 
 + 10% **intro Python** examples;
 + 20% **theory** of model-based and search-based SE;
