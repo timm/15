@@ -11,10 +11,8 @@ status: ;cd ..; $(Make) statsus
 define p2md
   BEGIN           {  
          q="\""
-         print ""
-         print q q q 
-         print "# " name
-         print q q q
+         print "" 
+         print "# " name 
          print ""
          First = 1      
          In = 1

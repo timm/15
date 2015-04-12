@@ -4,9 +4,7 @@
 |----|-----|
 
 
-"""
 # 101wrap.py
-"""
 
 
 ## Example of using Function Decorators

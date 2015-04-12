@@ -4,9 +4,7 @@
 |----|-----|
 
 
-"""
 # settings.py
-"""
 
 Settings idioms
 #1) stored in 1 global place (easier to mutate)
