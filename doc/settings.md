@@ -4,7 +4,10 @@
 |----|-----|
 
 
+"""
 # settings.py
+"""
+
 Settings idioms
 #1) stored in 1 global place (easier to mutate)
 #2) source code for making settings can be spread

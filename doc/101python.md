@@ -4,7 +4,10 @@
 |----|-----|
 
 
+"""
 # 101python.py
+"""
+
 
 # 101python.py: some basic Python examples
 
