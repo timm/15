@@ -9,7 +9,7 @@
 
 ## Example of using Function Decorators
 
-$prefix/aaa $prefix/bb
+https://github.com/timm/15/blob/master//aaa https://github.com/timm/15/blob/master//bb
 
 ### Timing functions
 

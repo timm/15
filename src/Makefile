@@ -48,5 +48,5 @@ etc/p2md.awk  : Makefile
 
 $(out)/%.md: %.py etc/header.txt etc/footer.txt etc/p2md.awk
 	@echo "making... $<"
-	@(cat etc/header.txt; awk -f etc/p2md.awk -v name="$<" $< ; cat etc/footer.txt) | sed 's?_PREFIX?$$prefix?g' > $@;
+	@(cat etc/header.txt; awk -f etc/p2md.awk -v name="$<" $< ; cat etc/footer.txt) | sed 's?_PREFIX?$(prefix)?g' > $@;
 	@git add $@
