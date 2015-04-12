@@ -2,7 +2,7 @@
 
 # Timm's Search-based Tools (in Python)
 
-<img align=right src="https://raw.githubusercontent.com/timm/15/master/src/img/tim.jpg">[_"There are some who call me... Tim?"_](https://www.youtube.com/watch?v=JTbrIo1p-So)
+<img align=right width=150 src="https://raw.githubusercontent.com/timm/15/master/src/img/tim.jpg">[_"There are some who call me... Tim?"_](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
 
 This site is my "howto" guide on combine search-based tools and data mining tools for
