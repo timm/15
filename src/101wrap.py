@@ -4,7 +4,6 @@ import datetime
 
 ## Example of using Function Decorators
 
-_PREFIX/aaa _PREFIX/bb
 
 ### Timing functions
 
