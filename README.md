@@ -2,16 +2,14 @@
 
 # Timm's Search-based Tools (in Python)
 
-<table boder=0><tr><td><img width="300" src="https://raw.githubusercontent.com/timm/15/master/src/img/tim.jpg">
-<br>
-<a href="https://www.youtube.com/watch?v=JTbrIo1p-So">"<em>There are some who call me... Tim?"</em></a>
-</td>
-<td>
+["_There are some who call me... Tim?_](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
-This site is a "howto" guide on combine SBSE and data mining tools to explore
-models. It is/was written Summer 2015 for 
-<em>Automated (Model-Based) Software Engineering</em>, an CS NcState graduate class. Share and enjoy.
-</td></tr></table>
+## About This Site
+
+This site is a "howto" guide on combine SBSE and data mining tools
+to explore models. It is/was written Summer 2015 for _Automated
+(Model-Based) Software Engineering_, an CS NcState graduate class.
+Share and enjoy.
 
 This site comprises:
 
