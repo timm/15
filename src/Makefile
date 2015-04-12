@@ -1,5 +1,5 @@
 out    = ../doc#
-prefix = https://github.com/timm/15/blob/master/
+prefix = https://github.com/timm/15/blob/master#
 
 
 pys  = $(subst .py,.md,$(shell ls *.py;))#
