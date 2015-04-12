@@ -1,6 +1,6 @@
 <img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
-# Timm Tools : SBSE source code (in Python)
+# Timm Tools : Search-based programming (in Python)
 
 ## About this Site
 
