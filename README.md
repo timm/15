@@ -2,9 +2,9 @@
 
 # Timm's Search-based Tools (in Python)
 
-<table boder=0><tr><td><img width=150 src="https://raw.githubusercontent.com/timm/15/master/src/img/tim.jpg">
+<table boder=0><tr><td><img width=200 src="https://raw.githubusercontent.com/timm/15/master/src/img/tim.jpg">
 <br>
-<a href="https://www.youtube.com/watch?v=JTbrIo1p-So">"_There are some who call me... Tim?"_</a>
+<a href="https://www.youtube.com/watch?v=JTbrIo1p-So">"<em>There are some who call me... Tim?"</em></a>
 </td>
 <td>
 
