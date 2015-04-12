@@ -1,18 +1,22 @@
 <img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
-# Timm Tools : Search-based programming (in Python)
+# Timm's Search-based Tools (in Python)
+
+<img align=right src="_PREFIX/src/img/tim.jpg">[_There are some who call me... Tim?_](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
 ## About this Site
 
 This site is my "howto" guide on combine search-based tools and data mining tools for
 exploring models. It is/was written Summer 2015 as training materials for the NcState ComSci graduate
-class _Automated (Model-Based) Software Engineering_. It contains:
+class _Automated (Model-Based) Software Engineering_. 
 
-+ 10% **theory** of model-based and search-based SE;
+This site comprises:
+
 + 10% **intro Python** examples;
++ 20% **theory** of model-based and search-based SE;
 + 20% how to **build** models (using Python DSLs, using raw programming, uses interfaces to other systems);
-+ 40% how to **search** models (multi-objective optimization, plus some data mining);
-+ 20% how to **watch** model output (statistical methods for incrementally assessing models).
++ 30% how to **search** models (multi-objective optimization, plus some data mining);
++ 20% how to **watch** model output (experimental methods to understanding models).
 
 Also, this site contains [links to example models](doc/examplemodels.md).
 
