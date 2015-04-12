@@ -1,9 +1,9 @@
 <img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
-["_There are some who call me... Tim?_](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
 # Timm's Search-based Tools (in Python)
 
+["_There are some who call me... Tim?_](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
 ## About This Site
 
