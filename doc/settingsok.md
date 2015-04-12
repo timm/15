@@ -1,4 +1,4 @@
-<img width=800 src="https://raw.githubusercontent.com/timm/15/master/img/banner.jpg">
+<img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
 |[Home](https://github.com/timm/15)|[Sitemap](https://github.com/timm/15/blob/master/TOC.md)|
 |----|-----|
@@ -22,7 +22,7 @@ RESULTS: {'mu': 1.9982820946390811, 'seed': 10, 'n': 1000000}
 
 __________
 
-<img width=200 align=right src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl.svg">
+<img width=200 align=right src="https://raw.githubusercontent.com/timm/15/master/src/img/wtfpl.svg">
 Copyright © 2000 Your Name <tim.menzies@gmail.com>
 
 This work is free. You can redistribute it and/or modify it under the
