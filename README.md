@@ -42,7 +42,8 @@ Also, there  is stong connection between  data mining can  optimization:
   to combine/ clarify/ simplify these two approaches. 
 + My suspicions are that both approaches
    are really combinations of a lower-level set of primitive operators.
-+ The   goal of this work is to indentify those operators, and offer sample implementations. 
++ The   goal of this work is to indentify those operators, and offer sample implementations.
++ Watch this space!
 
 ## Before you start  
 
