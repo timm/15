@@ -4,6 +4,8 @@ import datetime
 
 ## Example of using Function Decorators
 
+_PREFIX/aaa _PREFIX/bb
+
 ### Timing functions
 
 How long does it take to run?
