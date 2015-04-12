@@ -3,6 +3,8 @@ pys  = $(subst .py,.md,$(shell ls *.py;))#
 mds  = $(out)/$(subst .md ,.md $(out)/,$(pys))#
 Make = $(MAKE) --no-print-directory #
 
+publish: dirs $(mds)  typo
+
 typo  : ;cd ..; $(Make) typo
 commit: ;cd ..; $(Make) commit
 update: ;cd ..; $(Make) update
@@ -33,7 +35,7 @@ endef
 
 export p2md
 
-publish: dirs $(mds)  typo
+
 
 dirs:
 	@ - mkdir -p $(out) etc
