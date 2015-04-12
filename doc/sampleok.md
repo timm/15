@@ -1,7 +1,6 @@
 <img width=900 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
-|[Home](https://github.com/timm/15/blob/master/README.md)|[Sitemap](https://github.com/timm/15/blob/master/TOC.md)|
-|----|-----|
+_Go to: [Home](https://github.com/timm/15/blob/master/README.md) | [Sitemap](https://github.com/timm/15/blob/master/TOC.md)_
 
 
 # sampleok.py
