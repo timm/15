@@ -1,4 +1,4 @@
-<img src="http://header.jpg">
+<img width=600 src="https://raw.githubusercontent.com/timm/15/master/img/wtfpl.svg">
 
 |Home|About|
 |----|-----|
