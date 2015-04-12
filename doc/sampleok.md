@@ -1,4 +1,4 @@
-<img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
+<img width=900 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
 |[Home](https://github.com/timm/15/blob/master/README.md)|[Sitemap](https://github.com/timm/15/blob/master/TOC.md)|
 |----|-----|
