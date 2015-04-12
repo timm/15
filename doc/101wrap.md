@@ -6,9 +6,9 @@
 
 # 101wrap.py
 
-# Example of using Function Decorators
+## Example of using Function Decorators
 
-## Timing functions
+### Timing functions
 
 How long does it take to run?
 
@@ -22,7 +22,7 @@ def speed(f,repeats=10):
   return delta/(repeats*1.0)
 ````
 
-## Fibonacci (the Wrong Way)
+### Fibonacci (the Wrong Way)
 
 The following doubly -recursive version blows up after n> 32.
 
@@ -44,7 +44,7 @@ def fasterFib(n):
 
 But wouldn't it be great if we didn't have to be clever?
 
-## Wrapper magic
+### Wrapper magic
 
 Rewrite the function such that old results get cached and,
 perhaps, reused.
@@ -63,7 +63,7 @@ def fib(n):
   return 1 if  n<2 else fib(n-1) + fib(n-2)
 ````
 
-## And does this work?
+### And does this work?
 
 ````python
 def demo():
@@ -82,7 +82,7 @@ def demo():
 #demo()
 ````
 
-## Output
+### Output
 
 The slow way starts blowing up at 30. Warning. Do not run this for n=33
 
@@ -148,8 +148,12 @@ Note that the following code cache's
 things in an entry marked with the name
 of the calling function. So this cache
 can cache things from many different functions.
-````python
 
+First, we will do a  basic cache, 
+which will serve to illustrate some
+of the basic techniques.
+
+````python
 def cache(f):
   "Caching, simple case, no mirroring."
   name = f.__name__  
@@ -163,7 +167,12 @@ def cache(f):
     i._cache[key] =  x # ensure ache holds 'c'
     return x
   return wrapper
-  
+````
+
+Now we repeat the above, modified for the
+mirrored cache case.
+
+````python
 def cache2(f):
   "Cache mirrored properties."
   name = f.__name__
@@ -182,26 +191,33 @@ def cache2(f):
     i._cache[key] = j._cache[key] = x
     return x
   return wrapper
-
 ````
 
 One design decision here that is kinda fun
-is "where do we put the cache?". In the
-following, we create a Row object and keep
-the cache in the row. Then, if the row
-is ever garbage collected then "Zap!",
-its cache goes as well. Neat!
+is "where do we put the cache?":
 
++ In the above `memo` function, we built
+  one cache per function, with no way to forget
+  outdated information.
++ In the following, we create a Row object 
+  and keep the cache in the row. Then, if the 
+  row is ever garbage collected then "Zap!",
+  its cache goes as well. Neat!
+
+First, here's a little Python magic,
+to check if a variable has a certain named
+variable.
 ````python
 def hasnot(inst,name):
   "True if instance lacks variable."
   return not name in inst.__dict__
 ````
 
-For that design decision to work, we'll
-have to refer to Rows by some unique numeric
-id (and not a pointer... why?) that is
-different for each row.
+Back to our example of using `cache`
+and `cache2`. For that design decision to 
+work, we'll have to refer to Rows by some
+unique numeric id (and not a pointer... why?)
+that is different for each row.
 
 ````python
 class Row:
@@ -233,7 +249,11 @@ class Row:
     "Returns a number 0..1"
     tmp = [(x -y)**2  for x,y in zip(i,j)]
     return sum(tmp)**0.5/ len(tmp)**0.5
+````
 
+### RowDemo
+
+````python
 def rowDemo():
   import random
   random.seed(1) 
