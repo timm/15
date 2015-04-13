@@ -4,7 +4,7 @@ typo:  ready
 	@- git status
 	@- git commit -am "saving"
 	@- git push origin master
-	
+
 commit:  ready 
 	@- git status
 	@- git commit -a 
@@ -14,7 +14,7 @@ update:; @- git pull origin master
 status:; @- git status
 
 ready: zaps gitting 
-zaps : ; @- rm -rf *.pyc   
+zaps : ; @- rm -rf *.pyc  */*.pyc 
 
 gitting:
 	@git config --global credential.helper cache
@@ -23,7 +23,7 @@ gitting:
 your:
 	@git config --global user.name "Your name"
 	@git config --global user.email your@email.address
-	
+
 timm:
 	@git config --global user.name "Tim Menzies"
 	@git config --global user.email tim.menzies@gmail.com

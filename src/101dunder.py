@@ -1,2 +1,46 @@
 
 # duner. using numbers and sample.
+
+from lib import *
+
+from contextlib import contextmanager
+
+"""
+
+ q   +-----+  r  +-----+
+---->|  C  |---->|  D  |--> s
+ ^   +-----+     +-+---+
+ |                 |
+ +-----------------+ 
+
+C = stock of clean diapers
+D = stock of dirty diapers
+q = inflow of clean diapers
+r = flow of clean diapers to dirty diapers
+s = out-flow of dirty diapers
+
+"""
+def sim(state0,life=100,spy=False):
+  for t in xrange(life):
+    if spy:
+      print t,state0
+    state1 = state0.copy()
+    yield t,state0,state1
+    for key in state1.content():
+      if state1[key]  < 0:
+        state1[key] = 0
+    state0 = state1
+  
+def diapers():
+  state0 = o(C=20, D=0, q=0, r=8, s=0)
+  for t,u,v in sim(state0,60,spy=True):
+    v.C = u.C + u.q - u.r
+    v.D = u.D + u.r - u.s
+    v.q = 70 if t % 7 == 6 else 0 
+    v.s = u.D if (t % 7 == 6) else 0
+    if t == 34: # special case (the day i forget)
+      v.s = 0
+  print t,u
+
+
+diapers()

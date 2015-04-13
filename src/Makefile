@@ -11,7 +11,7 @@ publish: dirs $(mds)  typo
 typo  : ;cd ..; $(Make) typo
 commit: ;cd ..; $(Make) commit
 update: ;cd ..; $(Make) update
-status: ;cd ..; $(Make) statsus
+status: ;cd ..; $(Make) status
 
 define p2md
   BEGIN           {  
