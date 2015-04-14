@@ -1,4 +1,8 @@
-<img width=800 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
+[<img width=900 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">]("https://raw.githubusercontent.com/timm/15/master/README.md)
+
+_Go to: [Home]("https://raw.githubusercontent.com/timm/15/master/README.md) | [Sitemap]("https://raw.githubusercontent.com/timm/15/master/TOC.md)_
+
+
 
 
 # Timm's Search-based Tools (in Python)
