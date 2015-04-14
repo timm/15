@@ -13,7 +13,7 @@ def SAMPLE(): return o(
 class Sample:
   "Keep, at most, 'size' things."
   def __init__(i, init=[], size=None):
-    i.max = size or the.SAMPLE.cache
+    i.max = size or my.SAMPLE.cache
     i.n, i.all, i.ordered = 0, [], False
     map(i.__iadd__,init)
   def __iadd__(i,x):
@@ -39,6 +39,8 @@ class Numbers:
       i._cache.all = sorted(i._cache.all)
     i.sorted = False
     return i._cache.all
+  def __repr__(i):
+    return '<'+str(i._cache.all)+'>'
   def __ne__(i,j):
     gt = lt = n = 0
     for one in i.all():
@@ -46,6 +48,6 @@ class Numbers:
         n += 1
         if one > two: gt += 1
         if one < two: lt += 1
-    return abs(gt - lt)/n > the.SAMPLE.dull
+    return abs(gt - lt)/n > my.SAMPLE.dull
     
  

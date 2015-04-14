@@ -2,7 +2,23 @@ from __future__ import division,print_function
 from sample import *
 
 @ok
-def sampleok():
+def sample0ok():
+  rseed(1)
+  some=Numbers(size=32)
+  for x in xrange(1000):
+    some += x
+  print(some.all())
+  
+@ok
+def sample1ok():
+  rseed(1)
+  lst  = [r() for _ in xrange(1000)]
+  some = Numbers(lst)
+  print(ntiles(gs(sorted(lst))))
+  print(ntiles(gs(some.all())))
+  
+@ok
+def sample2ok():
   """How different are the deltas between
      two random samples, keeping all nums
      or just a small sample."""

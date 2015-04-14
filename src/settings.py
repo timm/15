@@ -13,27 +13,27 @@ from contextlib import contextmanager
 from o import *
 import random, datetime, time
 
-the=o() #1) idioms stored in global place
+my=o() #1) idioms stored in global place
 
 def setting(f):
   "#2) have defaults which can overridden."
   def wrapper(**d):
-    tmp = the[f.__name__] = f().add(**d)
+    tmp = my[f.__name__] = f().add(**d)
     return tmp
   wrapper()
   return wrapper
 
 #2) i can write multiple settings functions X,Y,Z
 #   anywhere in the code; and these can be accessed
-#   via the.X and the.Y and the.Z;
+#   via my.X and my.Y and my.Z;
 #3) and can be reset  to their redefaults by X(), Y(), Z();
 #4) these can be adjusted via e.g. STUDY(seed=2).
 
 @setting 
-def STUDY(**d): return o(
+def STUDY(): return o(
     seed    =   1,
     repeats = 100
-    ).add(**d)
+    )
 
 @contextmanager
 def settings(f,**d):
@@ -63,8 +63,8 @@ def study(what,*usings):
   t1 = time.time()
   for (using, override) in usings:  
     using(**override)                     #1c
-  rseed(the.STUDY.rseed)                  #1d
-  print(the,"\n")                         #1e
+  rseed(my.STUDY.rseed)                  #1d
+  print(my,"\n")                         #1e
   yield
   # 2) AFTER
   t2 = time.time() # show how long it took to run

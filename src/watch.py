@@ -6,16 +6,14 @@ from n   import *
 # should define better in each goal
 
 @setting
-def WATCH(**d): return o(
+def WATCH(): return o(
     trivial = 0.01,
     tiles   = [0.1, 0.3, 0.5, 0.7, 0.9 ],
     maxEvals=10000
     lives   = 5
-    ).add(**d)
+    )
 
-def ntiles(lst,tiles):
-  thing = lambda z: lst[ int(len(lst)*z)  ]
-  return [ thing(tile) for tile in tiles ]
+
 
 class Watch:
   def __init__(i):
