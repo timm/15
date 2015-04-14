@@ -1,6 +1,6 @@
 <img width=900 src="https://raw.githubusercontent.com/timm/15/master/src/img/banner.jpg">
 
-_Go to: [Home]("https://raw.githubusercontent.com/timm/15/master/README.md) | [Sitemap]("https://raw.githubusercontent.com/timm/15/master/TOC.md)_
+_Go to: <a href="https://raw.githubusercontent.com/timm/15/master/README.md">Home</a> | <a href="https://raw.githubusercontent.com/timm/15/master/TOC.md">TOC</a>
 
 
 
