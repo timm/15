@@ -29,7 +29,8 @@ class Sample:
 class Numbers:
   "Keep, at most, 'size' numbers, in sorted order."
   def __init__(i,init=[],size=None):
-    i._cache, i.sorted = Sample(init,size), False
+    i._cache =  Sample(init,size)
+    i.sorted = False
   def __iadd__(i,x):
     i._cache += x
     i.sorted  = False
