@@ -5,9 +5,9 @@
 
 
 
-# Timm's Search-based Tools (in Python)
+# PyScan: Search-based Tools (in Python)
 
-["_There are some who call me... Tim?_"](https://www.youtube.com/watch?v=JTbrIo1p-So)
+Author: ["_There are some who call me... Tim?_"](https://www.youtube.com/watch?v=JTbrIo1p-So)
 
 ## Under Construction
 
