@@ -187,7 +187,7 @@ def _dict():
     
 @ok
 def _counts():
-  "Using a dict to count character frequencies
+  "Using a dict to count character frequencies"
   seen = {}
   for x in "Mississippi":
     seen[x] = seen.get(x, 0) + 1
@@ -254,9 +254,9 @@ def go5():
 @ok 
 def go6():
   "Without iterators."
-   lst = [8347, 6230, 923834, 1, 404, 993]
-   out = [x for x in lst if x > 1000]
-   assert out == [8347, 6230, 923834]
+  lst = [8347, 6230, 923834, 1, 404, 993]
+  out = [x for x in lst if x > 1000]
+  assert out == [8347, 6230, 923834]
    
 def bigguns(lst,n):
   "Defining iterator"

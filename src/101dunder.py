@@ -34,8 +34,8 @@ def sim(state0,life=100,spy=False):
 def diapers():
   state0 = o(C=20, D=0, q=0, r=8, s=0)
   for t,u,v in sim(state0,60,spy=True):
-    v.C = u.C + u.q - u.r
-    v.D = u.D + u.r - u.s
+    v.C += u.q - u.r
+    v.D += u.r - u.s
     v.q = 70 if t % 7 == 6 else 0 
     v.s = u.D if (t % 7 == 6) else 0
     if t == 34: # special case (the day i forget)
