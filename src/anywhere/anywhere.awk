@@ -3,52 +3,80 @@ BEGIN { FS=OFS= "," ; srand(1)}
  gsub(/#.*/,"")
 }
 /^$/ { next}
-     { N++ ? DATA() | NAMES() }
-END  { anywhere() }
+     { ROW(Src,NF)
+       M[0]++ ? DATA(SRC,M,D) | NAMES(SRC,M) }
+END  { anywhere(M,D) }
 
-function NAMES(   i,tmp) {
-  for{i=1;i<=NF;i++) {
-    tmp = Name[i]=$i
-    if (tmp ~ /\$/) Num[i]
-    if (tmp ~ /</)  Less[i]
-    if (tmp ~ />/)  More[i]
+function ROW(l,n,   i) {
+  split("",l,"")
+  for(i=1;i<=n;i++)
+    l[i] = $i
+}
+function NAMES(src,m,   i,tmp) {
+  for{i=src) {
+    tmp = m["name"][i]=$i
+    if (tmp ~ /\$/)   m["num"][i]
+    if (tmp ~ /</)    m["less"][i]
+    if (tmp ~ />/)    m["more"][i]
+    if (tmp ~ /[<>]/) m["goal"][i] 
 }}
-function DATA(n,l,   i,tmp) {
-  for(i=1;i<=NF;i++) {
-    tmp = $i
+function DATA(src,m,d,   i,tmp) {
+  n = m[0]
+  for(i in src) {
+    tmp = src[i]
+    name = m["name"][i]
     if (tmp ~ /\?/) 
        continue
-    l[n][Name[i]]= tmp
-    if (i in Num) {
-      if (! (i in Hi)) 
-        Hi[i] = Lo[i] = tmp
+    d[n][i]= tmp
+    if (i in m["num"]) {
+      if (! (i in n["lo"])) 
+        m["lo"][i] = m["hi"][i] = tmp
       else {
-        if (tmp > Hi[i]) Hi[i] = tmp
-        if (tmp < Lo[i]) Ko[i] = tmp
+        if (tmp > m["hi"][i]) m["hi"][i] = tmp
+        if (tmp < m["lo"][i]) m["lo"][i] = tmp
 }}}}
 function any(l) {
   return round(rand()*length(l))
 }
-function anywhere(data,names,n,
+function anywhere(d,m,
                   i,j) {
   repeat 
-    i = any(data)
-    j = any(data)
+    i = any(d)
+    j = any(d)
   until (i != j) 
+  c = dist(i,j,m,d)
+  for(k in d) {
+    a= dist(k,i,m,d)
+    b= dist(l,j,m,d)
+    x= (a**2 + c**2 - b**2) / (2*a*c)
+    if (x >= 0) && (x <= 1) {
+       y = (a**2 - x**2)**0.5
+       
+    }
+  }
 }
-function norm(i,lo,hi) { return (i-lo)/(hi-lo+0.0001) }
-function dist(i,j,data,     c,x,y,n,inc) { 
-  for (c in data[i]) {
-    x = data[i][c]
-    y = data[j][c]
+function goalp(i,m)    { return i in m["goal"] }
+function nump(i,m)     { return i in m["num"] }
+function symp(i,m)     { return i in m["num"] ? 0 : 1 }
+function norm(n,i,m)   { 
+  lo = m[i]["lo"] 
+  hi = m[i]["hi"]
+  return (n-lo)/(hi-lo+0.0001) 
+}
+function dist(i,j,m,d    col,x,y,n,inc) { 
+  for (col in d[i]) {
+    if (goalp(col,m))
+      continue
+    x = d[i][col]
+    y = d[j][col]
     if ((x=="?") && (x=="?")) 
       continue
     n++
-    if (! (c in Num))
+    if (symp(col,m))
       inc += x==y ? 0 : 1
     else {
-      if (x != "?")  x = norm(x,Lo[c],Hi[c])
-      if (y != "?")  y = norm(y,Lo[c],Hi[c])
+      if (x != "?")  x = norm(x,col,m)
+      if (y != "?")  y = norm(y,col,m) 
       if (x == "?")  x = y < 0.5 : 1 : 0
       if (y == "?")  y = x < 0.5 : 1 : 0
       inc += (x-y)**2 
