@@ -42,58 +42,41 @@ function DATA(src,m,d,   i,tmp,n,name) {
 function any(l) {
   return int(rand()*(length(l))) + 1
 }
-function anywheres(m,d,n,   i,push) {
-  for(i=1; i<=n; i++)
-    anywhere(m,d,push,n)
-  for (i in push)
-    for(j in push[i])
-      print push[i][j]
-}
-function anywhere(m,d,push,n,
-                  e,w,s,se,sw,tmp,i,y,
-                  a,b,c,x,hypotenuse) {
-  do  {
-    e = any(d)   # excellent
-    w = any(d)   # worse
-  } while (e == w) 
-  se = fromHell(e,m,d)
-  sw = fromHell(w,m,d)
-  if (sw > se) 
-    here(w,e,sw - se,m,d,push,n)
-  else 
-    here(e,w,se - sw,m,d,push,n)
-}
-function here(e,w,better,m,d,push,n,
-              i,a,b,c,x,hypotenuse) {
-  c = dist(e,w,m,d)
-  for(i in d) {
-    if (i == e) continue
-    if (i == w) continue
-    a = dist(i,e,m,d)
-    b = dist(i,w,m,d)
-    x = (a**2 + c**2 - b**2) / (2*c)
-    hypotenuse = a**2 >= x**2 ? a : b
-    y = (hypotenuse**2 - x**2 + 0.00001)**0.5
-    for (col in m["indep"])
-      mutations(m,d,col,i,e,better/(y*c),push,n)
+function anywhere(m,d,n,   i,push) {
+  max = shuffle(d)
+  for(e=1; e<=n; e+=2) {
+     w  = e + 1
+     c  = dist(e,w,m,d) + 0.00001
+     se = fromHell(e,m,d)
+     sw = fromHell(w,m,d)
+     for(i=n+1;i<=max;i++) {
+       if (sw > se) 
+          here(m,d,w,e,c,i,sw,se)
+       else 
+          here(m,d,e,w,c,i,se,sw)
+}}}
+function here(m,d,e,w,c,i,se,sw,
+              ex,ix,col,a,b,x,hypotenuse,y) { 
+  a = dist(i,e,m,d)
+  b = dist(i,w,m,d)
+  x = (a**2 + c**2 - b**2) / (2*c)
+  hypotenuse = a**2 >= x**2 ? a : b
+  y = (hypotenuse**2 - x**2)**0.5
+  for (col in m["indep"]) {
+    ex = d[e][col]
+    ix = d[i][col]  
+    if (ix != ex) 
+      d[i][col] = nudge(m,col,ix,ex,
+                        (b/c)*(se-sw)/(c*y)) #??? b/c
 }}
-function mutations(m,d,col,i,e,w,push,n, 
-                   ex,ix,b4) {
-  ex = d[e][col]
-  ix = d[i][col] 
-  b4 = push[i][col]
-  if (ix != ex)
-    push[i][col] = mutate(m,col,ix,ex,w,b4)
-}
-function mutate(m,col,ix,ex,w,b4,
+function nudge(m,col,ix,ex,want,
                 mutation,direction) {
   if (nump(col,m)) {
-      mutation  = abs(weight*(ex - ix))
+      mutation  = abs(want*(ex - ix))
       direction = ex < ix ? -1 : 1
       return b4 + direction*mutation/n 
     } else 
-      if (weight/n > rand())
-        return ex
+      return want > rand() ? ex : ix
 }
 function fromHell(i,m,d,   
                   col,n,x,hell,inc,more) {
@@ -147,3 +130,15 @@ function walk_array(arr, name,      i)
             printf("%s[%s] = %s\n", name, i, arr[i])
     }
 }
+
+function shuffle(a,  i,j,n,tmp) {
+  n = length(a) 
+  for(i=1;i<=n;i++) {
+    j = i + round(rand()*(n-i));
+    tmp=a[j];
+    a[j]=a[i];
+    a[i]=tmp;
+  };
+  return n;
+}
+function round(x) { return int(x + 0.5) }
