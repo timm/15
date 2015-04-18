@@ -56,14 +56,16 @@ function anywhere(m,d,push,n,
     e = any(d)   # excellent
     w = any(d)   # worse
   } while (e == w) 
-  c  = dist(e,w,m,d) + 0.000001
   se = fromHell(e,m,d)
   sw = fromHell(w,m,d)
-  if (sw > se) { 
-    # swap the ends
-    tmp = e ; e  = w;  w  = tmp
-    tmp = se; se = sw; sw = tmp 
-  }
+  if (sw > se) 
+    here(w,e,sw - se,m,d,push,n)
+  else 
+    here(e,w,se - sw,m,d,push,n)
+}
+function here(e,w,better,m,d,push,n,
+              i,a,b,c,x,hypotenuse) {
+  c = dist(e,w,m,d)
   for(i in d) {
     if (i == e) continue
     if (i == w) continue
@@ -72,20 +74,27 @@ function anywhere(m,d,push,n,
     x = (a**2 + c**2 - b**2) / (2*c)
     hypotenuse = a**2 >= x**2 ? a : b
     y = (hypotenuse**2 - x**2 + 0.00001)**0.5
-    nudge(push,m,d,e,i,n,(se-sw)/(y*c))
+    for (col in m["indep"])
+      mutations(m,d,col,i,e,better/(y*c),push,n)
 }}
-function nudge(push,m,d,e,i,n,weight,   
-               ex,ix,col,mutation,direction,inc) {
-  for (col in m["indep"]) 
-    if (nump(col,m)) {
-      ex = d[e][col]  
-      ix = d[i][col]
-      if (ix != ex) {
-        mutation  = norm(rand()*abs(weight*(ex - ix)),col,m)
-        direction = ex < ix ? -1 : 1
-        inc = direction*mutation/n
-        push[i][col] +=  inc
-}}}
+function mutations(m,d,col,i,e,w,push,n, 
+                   ex,ix,b4) {
+  ex = d[e][col]
+  ix = d[i][col] 
+  b4 = push[i][col]
+  if (ix != ex)
+    push[i][col] = mutate(m,col,ix,ex,w,b4)
+}
+function mutate(m,col,ix,ex,w,b4,
+                mutation,direction) {
+  if (nump(col,m)) {
+      mutation  = abs(weight*(ex - ix))
+      direction = ex < ix ? -1 : 1
+      return b4 + direction*mutation/n 
+    } else 
+      if (weight/n > rand())
+        return ex
+}
 function fromHell(i,m,d,   
                   col,n,x,hell,inc,more) {
   for (col in m["goal"]) {
