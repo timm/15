@@ -1,2 +1,4 @@
 eg:
-	cat housing.csv | gawk -f anywhere.awk   | gawk -f tiles.awk
+	@cat housing.csv \
+	| gawk -f anywhere.awk \
+	| gawk -f tiles.awk F=3

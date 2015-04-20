@@ -31,21 +31,26 @@ function  here(m,d,e,w,c,se,sw,p,n,i,
   x = (a**2 + c**2 - b**2) / (2*c)
   if (x > c || x > a) return 0
   y = (a**2 - x**2)**0.5
-  p[i] = inc = a/b*(se-sw)/(c*y**2)/n
-  #p[i] = inc
+  # A= domination prune: nearer good than bad
+  # B= improvement
+  # C= in a small region
+  # D= on a nearby contour
+  # E= divided by number of calls
+  # F= spread over all the independent variables
+               # A  *     B *  C *   D    /E/F
+  p[i] = inc = (a/b)*(se-sw)*(1/c)*(1/y**2)/n/indeps(m)
   print e,w,i,a,b,c,x,y,se,sw,inc
   for (col in m["indep"]) {
     ex = d[e][col]
-    ix = d[i][col]  
+    ix = d[i][col]  #? instead use instance with max b*s/a (the krishna example)
     if (ix != ex) 
       d[i][col] = nudge(m,col,ix,ex,p[i])
 }}
 function nudge(m,col,ix,ex,want,
-               mutation,direction,out,new) {
+               mutation,out,new) {
   if (nump(col,m)) {
-      mutation  = abs(want*(ex - ix))
-      direction = ex < ix ? -1 : 1
-      new = ex + direction*mutation
+      mutation  = want*(ex - ix)
+      new = ex + mutation
       out =  wrap(new,
                   m["lo"][col],
                   m["hi"][col])

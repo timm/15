@@ -39,6 +39,7 @@ function data(src,m,d,n,   i,tmp) {
         if (tmp > m["hi"][i]) m["hi"][i] = tmp
         if (tmp < m["lo"][i]) m["lo"][i] = tmp
 }}}
+function indeps(m)    { return length(m["indep"]) }
 function goalp(col,m) { return col in m["goal"] }
 function nump(col,m)  { return col in m["num"]  }
 function symp(col,m)  { return col in m["sym"]  }
