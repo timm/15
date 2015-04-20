@@ -1,11 +1,14 @@
 @include "lib.awk"
 @include "table.awk"
 
-BEGIN {
- srand(1)
- n = readcsv(m,d)
- anywhere(m,d,p,
-          n < 50 ? 10 : 20)
+BEGIN { main() }
+
+function main(   n,m,d,p) {
+    srand(1)
+    n = readcsv(m,d)
+    anywhere(m,d,p,
+             n < 50 ? 10 : 20)
+    #o(p,"p")
 }
 function anywhere(m,d,p,n,   
                   max,order,i,j,e,w,c,se,sw,l) {
@@ -18,17 +21,19 @@ function anywhere(m,d,p,n,
      sw = fromHell(w,m,d)
      for(j=n+1; j<=max; j++) {
        if (sw > se) 
-          here(m,d,w,e,c,sw,se,p,order[j])
+          here(m,d,w,e,c,sw,se,p,n,order[j])
        else 
-          here(m,d,e,w,c,se,sw,p,order[j]) }}}
-function  here(m,d,e,w,c,se,sw,p,i,
-               ex,ix,col,a,b,x,hypotenuse,y) {
+          here(m,d,e,w,c,se,sw,p,n,order[j]) }}}
+function  here(m,d,e,w,c,se,sw,p,n,i,
+               ex,ix,col,a,b,x,y,inc) {
   a = dist(i,e,m,d)
   b = dist(i,w,m,d)
   x = (a**2 + c**2 - b**2) / (2*c)
-  hypotenuse = a**2 >= x**2 ? a : b
-  y = (hypotenuse**2 - x**2)**0.5
-  p[i] = (1 - a/c)*(se-sw)/(c*y**2)
+  if (x > c || x > a) return 0
+  y = (a**2 - x**2)**0.5
+  p[i] = inc = a/b*(se-sw)/(c*y**2)/n
+  #p[i] = inc
+  print e,w,i,a,b,c,x,y,se,sw,inc
   for (col in m["indep"]) {
     ex = d[e][col]
     ix = d[i][col]  
@@ -44,7 +49,7 @@ function nudge(m,col,ix,ex,want,
       out =  wrap(new,
                   m["lo"][col],
                   m["hi"][col])
-      print col,ex,out,int(100*(ex-out)/(ex + 0.0001))
+      #print col,ex,out,int(100*(ex-out)/(ex + 0.0001))
     } else 
       out = want > rand() ? ex : ix
   
