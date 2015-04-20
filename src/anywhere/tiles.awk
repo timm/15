@@ -1,4 +1,4 @@
-{ X[++N] = $0}
+{ X[++N] = $NF}
 END {
   n= asort(X,D)
   q = int(n/10)
