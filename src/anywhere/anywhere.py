@@ -1,6 +1,8 @@
 from __future__ import print_function,division
 import random, pprint, re, pprint
 
+isa   = isinstance
+fun   = lambda x:x.__class__.__name__ == 'function'
 r     = random.random
 any   = random.choice
 rseed = random.seed
@@ -35,14 +37,16 @@ class o:
   def add(i,**d)         : i.d().update(d);return i
   def __setitem__(i,k,v) : i.__dict__[k] = v
   def __getitem__(i,k)   : return i.__dict__[k] 
-  def __repr__(i)        :
-    return pprint.pformat(os(i), indent=2, width=60)
-  
-def os(x):
-  if isinstance(x, o):
-    return os(x.d())
-  elif isinstance(x, dict):
-    return {k:os(v) for k,v, in x.items()}
+  def __repr__(i) :
+    return pprint.pformat(has(i),indent=2,width=60)
+
+def has(x, decimals=5) :
+  if   isa(x, o)    : return has(x.d())
+  elif isa(x,list)  : return map(has,x)
+  elif isa(x,float) : return round(x,decimals)
+  elif fun(x)       : return x.__name__+'()'
+  elif isa(x, dict) :
+    return {k:has(v) for k,v in x.items()}
   else:
     return x
      
@@ -96,7 +100,7 @@ def table(cells, num  = '$', less = '<',
       t.indep[i] = i
   return t
                     
-def row(t,cells):
+def row(t,cells, skip='?'):
   for i,cell in enumerate(cells):
     if cell != skip:
       if i in t.num:
