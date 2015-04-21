@@ -40,46 +40,58 @@ class o:
   def add(i,**d)         : i.d().update(d);return i
   def __setitem__(i,k,v) : i.__dict__[k] = v
   def __getitem__(i,k)   : return i.__dict__[k] 
-  def __repr__(i)        : show(has(i))
+  def __repr__(i)        : return show(has(i))
   
 def has(x,  decimals=5, wicked=False) :
-  if   isa(x, o)    : return has({'o': x.d()})
-  elif isa(x,list)  : return map(has,x)
-  elif isa(x,float) : return round(x,decimals)
-  elif fun(x)       : return x.__name__+'()'
+  if   isa(x, o):
+    return has({'o': x.d()})
+  elif isa(x,list):
+    return map(has,x)
+  elif isa(x,float):
+    return round(x,decimals)
+  elif fun(x):
+    return x.__name__+'()'
   elif wicked and hasattr(x,"__dict__"):
     return has({x.__class__.__name__ : x.__dict__})
-  elif isa(x, dict) :
+  elif isa(x, dict):
     return {k:has(v) for k,v in x.items()}
   else:
     return x
      
 #------------------------------------------------
 def readcsv(file, t = None): 
+  for cells in lines(file):
+    if t:
+      row(t,cells)
+    else:
+      t = table(cells)
+  return t
+
+def lines(file, bad  = r'(["\' \t\r\n]|#.*)',
+                sep  = "" ) :
   def atom(x):
     try : return int(x)
     except ValueError:
       try : return float(x)
       except ValueError : return x
-  def lines(file, bad  = r'(["\' \t\r\n]|#.*)',
-                  sep  = "" ) {
-    kept = ""
-    for line in open(file):
-      now   = re.sub(bad,"",line)
-      kept += now
-      if kept:
-        if not now[-1] == sep:
-          yield map(atom, kept.split(sep))
-          kept = ""
-  for cells in lines(file):
-    if t:
-      t.rows += [row(t,cells)]
-    else:
-      t = table(cells)
-  return t
-     
+  kept = ""
+  for line in open(file):
+    now   = re.sub(bad,"",line)
+    kept += now
+    if kept:
+      if not now[-1] == sep:
+        yield map(atom, kept.split(sep))
+        kept = ""
+        
 #------------------------------------------------    
-def clone(t) { return table(t.fields) }
+def row(t,cells, skip='?'):
+  t += [cells]
+  for i,cell in enumerate(cells):
+    if cell != skip:
+      if i in t.num:
+        hdr    = t.num[i]
+        hdr.lo = min(cell, hdr.lo)
+        hdr.hi = max(cell, hdr.hi)
 
 def table(cells, num  = '$', less = '<',
                  more = '>', skip = "?" ):
@@ -103,24 +115,15 @@ def table(cells, num  = '$', less = '<',
     if not i in t.goal:
       t.indep[i] = i
   return t
-                    
-def row(t,cells, skip='?'):
-  for i,cell in enumerate(cells):
-    if cell != skip:
-      if i in t.num:
-        hdr    = t.num[i]
-        hdr.lo = min(cell, hdr.lo)
-        hdr.hi = max(cell, hdr.hi)
-  return cells
 
+def clone(t) { return table(t.fields) }
+                    
 #------------------------------------------------    
 def norm(i,r):
   return (i - r.lo) / (r.hi - r.lo + 0.00001)
 
-def wrap(n,r):
-  if n > r.hi: return r.hi
-  if n < r.lo: return r.lo
-  return n
+def trim(n,r):
+  return max(r.lo, min(n, r.hi))
 
 def dist(cells1,cells2,t, skip="?"):
   n = inc = 0
