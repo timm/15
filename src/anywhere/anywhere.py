@@ -11,6 +11,9 @@ def shuffle(lst):
   random.shuffle(lst)
   return lst
 
+def show(x,indent=2,width=60):
+  pprint.pformat(x,indent=indent,width=width)
+  
 #------------------------------------------------
 def ok(*lst):
   for one in lst: unittest(one)
@@ -37,14 +40,15 @@ class o:
   def add(i,**d)         : i.d().update(d);return i
   def __setitem__(i,k,v) : i.__dict__[k] = v
   def __getitem__(i,k)   : return i.__dict__[k] 
-  def __repr__(i) :
-    return pprint.pformat(has(i),indent=2,width=60)
-
-def has(x, decimals=5) :
-  if   isa(x, o)    : return has(x.d())
+  def __repr__(i)        : show(has(i))
+  
+def has(x,  decimals=5, wicked=False) :
+  if   isa(x, o)    : return has({'o': x.d()})
   elif isa(x,list)  : return map(has,x)
   elif isa(x,float) : return round(x,decimals)
   elif fun(x)       : return x.__name__+'()'
+  elif wicked and hasattr(x,"__dict__"):
+    return has({x.__class__.__name__ : x.__dict__})
   elif isa(x, dict) :
     return {k:has(v) for k,v in x.items()}
   else:
