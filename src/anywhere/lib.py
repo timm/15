@@ -7,11 +7,11 @@ from boot import *
 @settings
 def LIB(): return o(
     seed =  1,
-    has   = o(decs = 3,
-              skip="_",
-              wicked=True),
-    show  = o(indent=2,
-              width=80)
+    has  = o(decs = 3,
+             skip="_",
+             wicked=True),
+    show = o(indent=2,
+             width=80)
 )
 #-------------------------------------------------
 isa   = isinstance
@@ -31,11 +31,11 @@ def show(x, indent=None, width=None):
 
 def has(x,  decs=None, wicked=None, skip=None) :
   if decs   is None:
-    decs   = the.LIB.has.decs
+    decs = the.LIB.has.decs
   if wicked is None:
     wicked = the.LIB.has.wicked
   if skip   is None:
-    skip   = the.LIB.has.skip
+    skip = the.LIB.has.skip
   if   isa(x, o):
     return has({'o': x.d()})
   elif isa(x,list):
