@@ -54,12 +54,12 @@ def has(x,  decs=None, wicked=None, skip=None) :
     return x
 
 @contextmanager
-def duration(n=1):
+def duration():
   t1 = time.time()
   yield
   t2 = time.time()
   print("\n" + "-" * 72)
-  print("# Runtime: %.3f secs" % ((t2-t1)/n))
+  print("# Runtime: %.3f secs" % (t2-t1))
 
 def use(x,**y): return (x,y)
 
