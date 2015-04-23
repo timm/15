@@ -1,4 +1,5 @@
-from boot import * # get the test eingine
+from __future__ import print_function
+from boot import * # get the test engine
 
 @ok # run+test something at load time
 def noop(): return True # never fails
@@ -18,3 +19,5 @@ def unittestok():
   # note that, when runm we never see 'unitest fail'
   assert unittest.tries == 10, 'unit test fail'
   assert unittest.fails == 5,  'unit test fail'
+
+print(unittest.score())

@@ -1,4 +1,5 @@
 from __future__ import print_function,division
+import traceback
 
 class o:
   def __init__(i,**d)    : i.add(**d)
@@ -20,9 +21,15 @@ def settings(f):
 def ok(*lst):
   for one in lst: unittest(one)
   return one
-  
+
 class unittest:
   tries = fails = 0  #  tracks the record so far
+  @staticmethod
+  def score():
+    t = unittest.tries
+    f = unittest.fails
+    return "# TRIES= %s FAIL= %s %%PASS = %s%%"  % (
+      t,f,int(round(t*100/(t+f+0.001))))
   def __init__(i,test):
     unittest.tries += 1
     try:
@@ -31,7 +38,6 @@ class unittest:
       unittest.fails += 1
       i.report(e,test)
   def report(i,e,test):
-    print("# TRIES= %s FAIL= %s TEST= %s : %s"  % (
-          unittest.tries, unittest.fails,
-          test.__name__, e))
+    print(traceback.format_exc())
+    print(unittest.score(),':',test.__name__, e)
     
