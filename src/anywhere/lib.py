@@ -24,6 +24,11 @@ def shuffle(lst):
   random.shuffle(lst)
   return lst
 
+def ntiles(lst, tiles=[0.1,0.3,0.5,0.7,0.9]):
+  at = lambda x: lst[ int(len(lst)*x) ]
+  return [ at(tile) for tile in tiles ]
+
+#-------------------------------------------------
 def show(x, indent=None, width=None):  
   print(pprint.pformat(has(x),
             indent= indent or the.LIB.show.indent,
@@ -37,7 +42,7 @@ def has(x,  decs=None, wicked=None, skip=None) :
   if skip   is None:
     skip = the.LIB.has.skip
   if   isa(x, o):
-    return has({'o': x.d()})
+    return has({x.__class__.__name__: x.d()})
   elif isa(x,list):
     return map(has,x)
   elif isa(x,float):
@@ -63,6 +68,14 @@ def duration():
 
 def use(x,**y): return (x,y)
 
+@contextmanager
+def setting(*usings):
+  for (using, override) in usings:
+    using(**override)
+  yield
+  for (using,_) in usings:
+    using()
+    
 @contextmanager
 def study(what,*usings):
   print("\n#" + "-" * 50,
