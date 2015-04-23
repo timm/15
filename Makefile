@@ -14,7 +14,7 @@ update:; @- git pull origin master
 status:; @- git status
 
 ready: zaps gitting 
-zaps : ; @- rm -rf *.pyc  */*.pyc 
+zaps : ; @- rm -rf *.pyc  */*.pyc  */*.pyc
 
 gitting:
 	@git config --global credential.helper cache
