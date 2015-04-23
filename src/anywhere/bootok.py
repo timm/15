@@ -20,4 +20,5 @@ def unittestok():
   assert unittest.tries == 10, 'unit test fail'
   assert unittest.fails == 5,  'unit test fail'
 
-print(unittest.score())
+print("\n"+"EXPECT...... # TRIES= 10 FAIL= 5 %PASS = 67%")
+print("GOT.........",unittest.score())
