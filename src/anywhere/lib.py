@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import pprint
 from boot import *
 
-@settings
+@setting
 def LIB(): return o(
     seed =  1,
     has  = o(decs = 3,
@@ -58,6 +58,19 @@ def has(x,  decs=None, wicked=None, skip=None) :
   else:
     return x
 
+def cache(f):
+  name = f.__name__
+  def wrapper(i):
+    i.cache = i.cache or {}
+    key = (name, i.id)
+    if key in i.cache:
+      x = i.cache[key]
+    else:
+      x = f(i) # sigh, gonna have to call it
+    i.cache[key] =  x # ensure ache holds 'c'
+    return x
+  return wrapper
+
 @contextmanager
 def duration():
   t1 = time.time()
@@ -69,7 +82,7 @@ def duration():
 def use(x,**y): return (x,y)
 
 @contextmanager
-def setting(*usings):
+def settings(*usings):
   for (using, override) in usings:
     using(**override)
   yield

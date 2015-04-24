@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 from lib import *
 
-@settings
+@setting
 def COL(): return o(
     cache = 256,
     dull  = [0.147, # small
