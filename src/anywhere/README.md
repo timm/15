@@ -13,7 +13,7 @@ sadas
 </td> </tr>
 <tr><td  align=center><img src="img/admin.jpg">
 </td><td align=center><img src="img/lectures.gif">
-</td><td align=center><img src="img/homework.gif">
+</td><td align=center><img src="img/homework.png">
 </td><td align=center><img src="img/review.gif">
 </td> </tr>
 <tr><td valign=top>
