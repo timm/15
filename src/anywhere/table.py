@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from lib import *
 from col import *
 
@@ -63,10 +64,10 @@ class Row:
   def __init__(i,cells=[],t=None):
     Row.id  = i.id = Row.id + 1
     i.cells = cells
-    i.cache = None
+    i._cache = None
     if t:
       i.table = t
-      t.rows += [cells]
+      t.rows += [i]
       for hdr in t.all:
         tmp = cells[hdr.pos]
         if tmp != the.TBL.skip:
@@ -77,20 +78,33 @@ class Row:
   def __repr__(i)     : return '<'+str(i.cells)+'>'
   @cache
   def fromHell(i) :
-    def from1(hdr, x, hell):
-      x = hdr.norm(x) if the.TBL.norm else x
-      return (x - hell)**2 
     n = inc = 0
     for hdr in t.more.values():
       n   += 1
-      inc += from1(hdr, i[hdr.pos], 
-                   0 if the.TBL.norm else hdr.lo)
+      inc += hdr.fromHell(i[hdr.pos],
+                          the.TBL.norm,
+                          more=True)
     for hdr in t.less.values():
       n   += 1
-      inc += from1(hdr, i[hdr.pos], 
-                   1 if the.TBL.norm else hdr.lo)
-    return inc**0.5 / n**0.5    
+      inc += hdr.fromHell(i[hdr.pos],
+                          the.TBL.norm,
+                          more=False)
+    return inc**0.5 / n**0.5
 
+def furthest(i,rows=None,t=None):
+  return closest(i,rows,t, last=-10**32, better=gt)
+
+def closest(i,rows=None,t=None, last=10**32, better=lt):
+  t    = t or i.table
+  rows = rows or t.rows
+  out  = None
+  for row in rows:
+    if row.id != i.id:
+      tmp = dist(i,row,t)
+      if better(tmp,last):
+        last,out = tmp,row
+  return out
+  
 def dist(i,j,t):
   n = inc = 0
   skip = the.TBL.skip
