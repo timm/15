@@ -11,10 +11,10 @@ sadas
 </td><td><b>Homework</b>
 </td><td><b>Review</b>
 </td> </tr>
-<tr><td  align=center>![img/admin.jpg](img/admin.jpg)
-</td><td align=center>![img/lectures.gif](img/lectures.gif)
-</td><td align=center>![img/homework.png](img/homework.gif)
-</td><td align=center>![img/review.gif](img/review.gif)
+<tr><td  align=center><img src="img/admin.jpg">
+</td><td align=center><img src="img/lectures.gif">
+</td><td align=center><img src="img/homework.gif">
+</td><td align=center><img src="img/review.gif">
 </td> </tr>
 <tr><td valign=top>
 <ul>
