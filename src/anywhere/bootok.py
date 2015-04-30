@@ -1,5 +1,13 @@
 #!/usr/bin/python
 from __future__ import print_function
+
+
+"""
+
+Demo code for the core code facilities.
+
+"""
+
 from boot import * # get the test engine
 
 @ok # run+test something at load time
