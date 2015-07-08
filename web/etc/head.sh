@@ -8,8 +8,8 @@ cat <<EOF
   <meta name="HandheldFriendly" content="True">
 
   <title>Tim Menzies: $head </title>
-
-  <link rel="stylesheet" type="text/css" media="screen" href="css/concise.min.css" />
+   <link rel="stylesheet"                               href="css/font-awesome.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="css/concise.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="css/masthead.css" />
   <link rel="stylesheet" href="css/font-awesome.css">
   <link rel="stylesheet" href="css/mine.css">
@@ -30,7 +30,7 @@ cat <<EOF
         <li><a href="#about">Home</a></li>
         <li><a href="">Papers</a></li>
         <li><a href="">CV</a></li>
-        <li><a href="">Vist my lab</a></li>
+        <li><a href="http://ai4se.net">Visit my lab</a></li>
       </ul>
     </nav>
   </header>

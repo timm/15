@@ -291,10 +291,12 @@ dd {
 }
 
 a {
-  color: #62b3e7;
+    color: #62b3e7;
+    color: blue; 
 }
 a:hover, a:visited {
-  color: #8ec8ee;
+	     color: #8ec8ee;
+	     color: blue;
   cursor: pointer;
 }
 p a, p a:visited {
@@ -331,7 +333,7 @@ acronym {
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6,
 .giga, .mega, .kilo {
-    color: white; ##181818;
+    color: #181818;
   font-family: "Droid Sans", Helvetica, Arial, sans-serif;
   font-weight: normal;
   text-rendering: optimizeLegibility;
@@ -1388,7 +1390,8 @@ table.table-full, table.table.table-full {
   background-color: #ececec;
 }
 .btn.bg-green {
-  background-color: #5cb85c;
+    background-color: #5cb85c;
+      background: #5cb85c;
 }
 .btn.bg-green:hover {
   background-color: #449d44;

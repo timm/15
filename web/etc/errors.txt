@@ -1,19 +1,4 @@
-line 20 column 42 - Warning: <img> lacks "alt" attribute
-line 21 column 9 - Warning: <a> attribute "href" lacks value
-line 21 column 20 - Warning: <img> lacks "alt" attribute
-line 22 column 9 - Warning: <a> attribute "href" lacks value
-line 22 column 20 - Warning: <img> lacks "alt" attribute
-line 23 column 9 - Warning: <a> attribute "href" lacks value
-line 23 column 20 - Warning: <img> lacks "alt" attribute
-line 24 column 9 - Warning: <a> attribute "href" lacks value
-line 24 column 20 - Warning: <img> lacks "alt" attribute
-line 25 column 9 - Warning: <a> attribute "href" lacks value
-line 25 column 20 - Warning: <img> lacks "alt" attribute
-line 30 column 13 - Warning: <a> attribute "href" lacks value
-line 31 column 13 - Warning: <a> attribute "href" lacks value
-line 32 column 13 - Warning: <a> attribute "href" lacks value
-Info: Document content looks like HTML5
-14 warnings, 0 errors were found!
+16 warnings, 0 errors were found!
 
 The alt attribute should be used to give a short description
 of an image; longer descriptions should be given with the
