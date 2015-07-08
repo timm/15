@@ -1,0 +1,34 @@
+line 20 column 42 - Warning: <img> lacks "alt" attribute
+line 21 column 9 - Warning: <a> attribute "href" lacks value
+line 21 column 20 - Warning: <img> lacks "alt" attribute
+line 22 column 9 - Warning: <a> attribute "href" lacks value
+line 22 column 20 - Warning: <img> lacks "alt" attribute
+line 23 column 9 - Warning: <a> attribute "href" lacks value
+line 23 column 20 - Warning: <img> lacks "alt" attribute
+line 24 column 9 - Warning: <a> attribute "href" lacks value
+line 24 column 20 - Warning: <img> lacks "alt" attribute
+line 25 column 9 - Warning: <a> attribute "href" lacks value
+line 25 column 20 - Warning: <img> lacks "alt" attribute
+line 30 column 13 - Warning: <a> attribute "href" lacks value
+line 31 column 13 - Warning: <a> attribute "href" lacks value
+line 32 column 13 - Warning: <a> attribute "href" lacks value
+Info: Document content looks like HTML5
+14 warnings, 0 errors were found!
+
+The alt attribute should be used to give a short description
+of an image; longer descriptions should be given with the
+longdesc attribute which takes a URL linked to the description.
+These measures are needed for people using non-graphical browsers.
+
+For further advice on how to make your pages accessible
+see http://www.w3.org/WAI/GL.
+. You may also want to try
+"http://www.cast.org/bobby/" which is a free Web-based
+service for checking URLs for accessibility.
+
+About HTML Tidy: https://github.com/htacg/tidy-html5
+Bug reports and comments: https://github.com/htacg/tidy-html5/issues
+Or send questions and comments to: https://lists.w3.org/Archives/Public/public-htacg/
+Latest HTML specification: http://dev.w3.org/html5/spec-author-view/
+Validate your HTML documents: http://validator.w3.org/nu/
+Lobby your company to join the W3C: http://www.w3.org/Consortium
