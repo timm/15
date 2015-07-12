@@ -261,7 +261,7 @@ table,
 fieldset, figure,
 pre,
 .row, .form-item {
-  margin-bottom: 24px;
+  margin-bottom: 10px;
   margin-bottom: 1.5rem;
 }
 
@@ -1330,7 +1330,7 @@ table.table-full, table.table.table-full {
   border: 0;
 }
 .btn:hover {
-  background-color: #b3b3b3;
+    background-color:#b3b3b3;
 }
 .btn:active {
   background-color: #bfbfbf;
@@ -1360,7 +1360,7 @@ table.table-full, table.table.table-full {
   background-color: #ffffff;
 }
 .btn.bg-white:hover {
-  background-color: #e6e6e6;
+    background-color: #e6e6e6;
 }
 .btn.bg-white:active {
   background-color: #f2f2f2;
@@ -1587,7 +1587,7 @@ input.btn-extra-large {
   transition: all 0.3s ease-out;
 }
 .dropdown .dropdown-menu li:hover {
-  background-color: #f3f8f8;
+    background-color: white; aa: #f3f8f8;
 }
 .dropdown .dropdown-menu > .dropdown-header {
   margin: 0;

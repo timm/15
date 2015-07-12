@@ -3,3 +3,16 @@ img.bg1 { width: 20px; }
 .masthead a:visited  {color:white;}
 
 p { padding-top: 0px;}
+
+h3 {
+    padding: 3px;
+    background-color: #ddd;
+    color: black;
+}
+
+.blackimg {
+    padding: 3px;
+    margin: 2px;
+    width: 175px;
+    border: #ccc 1px solid;
+}
