@@ -993,7 +993,7 @@ ol {
 }
 ul li,
 ol li {
-  line-height: 1.75em;
+    line-height: 1.75em;
 }
 ul ul,
 ol ul {
@@ -1252,7 +1252,7 @@ table.table-full, table.table.table-full {
 .bg-light-green {
   background-color: #cfeacf;
 }
-
+			  
 .bg-blue {
   background-color: #5bc0de;
 }

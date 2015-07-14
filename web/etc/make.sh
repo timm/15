@@ -1,7 +1,9 @@
 etc="$1"
 f="$2"
-title=$(head -1 "$f")
-(head="$title" bash "$etc"/head.sh
- tail -n +2 "$f" 
- bash "$etc"/tail.sh) #|
-#tidy5 -q -errors /dev/null -config "$etc"/tidy.cfg
+title=$(sed -n 2p "$f")
+if  ! [[ "$f" = "../src/index" ]]; then
+    head2="<h1>$title</h1>"
+fi
+(head="$title" head2="$head2" bash "$etc"/head.sh
+ tail -n +3 "$f" 
+ bash "$etc"/tail.sh)

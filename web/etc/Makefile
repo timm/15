@@ -1,13 +1,13 @@
 e=.
 f=../src
 t=..
-files=$(shell cd $f; ls *.html | sed 's?^?$t/?')
+files=$(shell cd $f; ls * | gawk '{print "'$t'/" $$1 ".html" }')
 
 all: ${files}
 
 # $(etc)/head.sh $(etc)/tail.sh
 
-../%.html : $f/%.html
+../%.html : $f/%
 	@ echo $@
 	@ - bash $e/make.sh "$e" "$<" > $@
 
