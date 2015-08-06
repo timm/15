@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from __future__ import print_function,division
 
 from col import *
@@ -16,7 +17,7 @@ def _nums(n = 512):
   seed(1)
   sum1 = sum2 = sum3 = 0
   tiles= [x/100.0 for x in xrange(1,100,1)]
-  with setting(use(COL,cache = 128)):
+  with settings(use(COL,cache = 128)):
     lst1 = sorted([r() for _ in xrange(n)])
     lst2 = sorted([r() for _ in xrange(n)])
     lst3 = Num(lst1).all()

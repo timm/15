@@ -10,7 +10,7 @@ class o:
 
 the = o()
 
-def settings(f):
+def setting(f):
   name = f.__name__
   def wrapper(**d):
     tmp = the[name] = f().add(**d)

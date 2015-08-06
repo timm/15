@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from __future__ import print_function,division
 from lib import *
 
@@ -40,5 +41,3 @@ def _duration():
   with study("fib",use(LIB, seed=5,decs=10)):
     fib(30)
   assert the.LIB.seed == 1
-     
-    

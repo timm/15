@@ -1,0 +1,13 @@
+{
+  "name": "jone",
+  "version": "0.0.1",
+  "description": "A simple command-line tool for searching git repositories",
+  "author": "Glynn Phillips",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "dependencies": {},
+  "bin": {
+    "jone": "jone.js"
+  }
+}

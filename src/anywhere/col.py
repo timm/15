@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 from lib import *
 
-@settings
+@setting
 def COL(): return o(
     cache = 256,
     dull  = [0.147, # small
@@ -24,24 +24,30 @@ class Sym:
   
 class Num:
   def __init__(i, inits=[],lo=10**32, hi=-10**32):
-    i.lo, i.hi, i.cache  = lo,hi, Cache()
+    i.lo, i.hi, i._cache  = lo,hi, Cache()
     i.ordered = False
     map(i.__iadd__,inits)
   def __iadd__(i,x):
     i.ordered = False
     i.lo = min(x,i.lo)
     i.hi = max(x,i.hi)
-    i.cache += x
+    i._cache += x
     return x
   def all(i):
     if not i.ordered:
-      i.cache.all = sorted(i.cache.all)
+      i._cache.all = sorted(i._cache.all)
       i.ordered = True
-    return i.cache.all
+    return i._cache.all
   def norm(i,x):
     return (x - i.lo) / (i.hi - i.lo + 0.00001)
   def trim(i,x):
     return max(i.lo, min(x, i.hi))
+  def fromHell(i,x,norm, want):
+    if want: hell =  0 if norm else i.lo
+    else:    hell =  1 if norm else i.hi
+    if norm:
+      x = i.norm(x) 
+    return (x-hell)**2
   def wrap(i,x):
     gap = i.hi - i.lo
     if x > i.hi:
@@ -49,6 +55,7 @@ class Num:
     if x < i.lo:
       return i.lo + ((x - i.lo) % gap)
     return x
+  
   def __ne__(i,j):
     lt = gt = n = 0
     for x in i.all():

@@ -1,10 +1,10 @@
 from __future__ import print_function,division
 import random, pprint, re, datetime, time
 from contextlib import contextmanager
-import pprint
+import pprint,sys
 from boot import *
 
-@settings
+@setting
 def LIB(): return o(
     seed =  1,
     has  = o(decs = 3,
@@ -14,6 +14,9 @@ def LIB(): return o(
              width=80)
 )
 #-------------------------------------------------
+def lt(x,y): return x < y
+def gt(x,y): return x > y
+
 isa   = isinstance
 fun   = lambda x:x.__class__.__name__ == 'function'
 r     = random.random
@@ -27,6 +30,10 @@ def shuffle(lst):
 def ntiles(lst, tiles=[0.1,0.3,0.5,0.7,0.9]):
   at = lambda x: lst[ int(len(lst)*x) ]
   return [ at(tile) for tile in tiles ]
+
+def say(*lst):
+  sys.stdout.write(', '.join(map(str,lst)))
+  sys.stdout.flush()
 
 #-------------------------------------------------
 def show(x, indent=None, width=None):  
@@ -54,9 +61,22 @@ def has(x,  decs=None, wicked=None, skip=None) :
   elif isa(x, dict):
     return {k:has(v)
             for k,v in x.items()
-            if skip != k[0]}
+            if skip != str(k)[0]}
   else:
     return x
+
+def cache(f):
+  name = f.__name__
+  def wrapper(i):
+    i.cache = i._cache or {}
+    key = (name, i.id)
+    if key in i._cache:
+      x = i._cache[key]
+    else:
+      x = f(i) # sigh, gonna have to call it
+    i._cache[key] =  x # ensure ache holds 'c'
+    return x
+  return wrapper
 
 @contextmanager
 def duration():
@@ -69,7 +89,7 @@ def duration():
 def use(x,**y): return (x,y)
 
 @contextmanager
-def setting(*usings):
+def settings(*usings):
   for (using, override) in usings:
     using(**override)
   yield
