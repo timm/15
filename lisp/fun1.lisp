@@ -63,13 +63,41 @@
  ;[ ] { } ! ?
 
 (defcol n num (sum 0) (sumsq 0) min max ns)
-(defcol s sym (h (make-hash-table)) mode max)
+(defcol s sym (h (make-hash-table)) mode (most 0))
 
 (defmethod += ((s sym) x)
   (with-slots (h mode max) s
-    (unless mode (setf mode x))
-    (unless max  (setf mode x))
-    (setf (gethash x h)
+    (let* ((new (incf (gethash x h 0))))
+      (if (> new max)
+	  (setf max  new
+		mode x))
+      x)))
+
+(defparameter *the*
+  '((col . ((cache . ((max .  20)))))))
+
+(defmacro z (&rest lst)
+  `(ra ',lst *the*))
+  
+(defun ra (tags &optional (ra *the*))
+  (let ((out ra))
+    (dolist (tag tags out)
+      (setf out (cdr (assoc tag out))))))
+
+(let ((width (z col cache max)))
+  (defstruct cache
+    (ns 0)
+    (all (make-array width :initial-element 0))
+    (max width)
+    (size 0)))
+
+(defmethod += ((c cache) x)
+  (with-slots (ns all max size) c
+    (incf ns)
+    (if (< size max)
+	(setf (aref all (list (incf size))) x)
+	(if push x all)
+
 ;(print (list ^forecast $temp $humidty ^wind !play))
 
 ;; (defun make-some-weather-data ()
