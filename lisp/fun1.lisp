@@ -62,8 +62,24 @@
 
  ;[ ] { } ! ?
 
-(defcol n num (sum 0) (sumsq 0) min max ns)
-(defcol s sym (h (make-hash-table)) mode (most 0))
+(let* ((seed0 10013)
+       (seed  seed0))
+  (defun reset-seed () (setf seed seed0))
+  (defun park-miller-randomizer ()
+    (let* ((multiplier 16807.0d0) ;16807 is (expt 7 5)
+	   (modulus    2147483647.0d0)
+	   (temp       (* multiplier seed)))
+      (setf seed (mod temp modulus))
+      (/ seed modulus)))
+  (defun r (&optional (n 1.0))
+    (let ((random-number (park-miller-randomizer)))
+      (* n (- 1.0d0 random-number))))
+  (defun rint (&optional (n 100))
+    (let ((random-number (/ (r 1000.0) 1000)))
+      (floor (* n random-number)))))
+
+(defcol n num txt pos ignore (mean 0) (m2 0) min max (ns 0) sd)
+(defcol s sym txt pos ignore (h (make-hash-table)) mode (most 0) )
 
 (defmethod += ((s sym) x)
   (with-slots (h mode max) s
@@ -73,11 +89,26 @@
 		mode x))
       x)))
 
-(defparameter *the*
-  '((col . ((cache . ((max .  20)))))))
+(defmethod += ((n num) x)
+  (with-slots (mean m2 min max ns sd) n
+    (incf ns)
+    (let* ((delta (- x mean)))
+      (setf mean (+ mean (/ delta ns))
+	    m2   (+ (* delta (- x mean))))
+      (if (> ns 2)
+	  (setf sd (sqrt (/ m2 (- ns 1))))))
+    x))
 
-(defmacro z (&rest lst)
-  `(ra ',lst *the*))
+(defun* _n ()
+  (let ((c (make-num)))
+    (dotimes (i 10000)
+      (+= c i))
+    (print c)))
+
+(defparameter *the*
+  '((col . ((cache . ((max .  256)))))))
+
+(defmacro z (&rest lst) `(ra ',lst *the*))
   
 (defun ra (tags &optional (ra *the*))
   (let ((out ra))
@@ -86,35 +117,66 @@
 
 (let ((width (z col cache max)))
   (defstruct cache
-    (ns 0)
-    (all (make-array width :initial-element 0))
-    (max width)
-    (size 0)))
+    (ns    0)
+    (all   (make-array width :initial-element 0))
+    (max   width)
+    (size  -1)))
 
 (defmethod += ((c cache) x)
   (with-slots (ns all max size) c
     (incf ns)
-    (if (< size max)
-	(setf (aref all (list (incf size))) x)
-	(if push x all)
+    (if (< size (1- max))
+	(setf (aref all (incf size)) x)
+	(if (<= (r) (/ size ns))
+	    (setf (aref all (floor (* (r) size))) x)))
+    x))
 
-;(print (list ^forecast $temp $humidty ^wind !play))
+(defun* _c ()
+  (let ((c (make-cache)))
+    (time (dotimes (i 10000)
+      (+= c i)))
+    (print (sort (cache-all c) #'<))))
 
-;; (defun make-some-weather-data ()
-;;   (data
-;;    :name   'weather
-;;    :columns  12
-;;    :egs    '((sunny 85 85 FALSE no)
-;; 	     (sunny 80 90 TRUE no)
-;; 	     (overcast 83 86 FALSE yes)
-;; 	     (rainy 70 96 FALSE yes)
-;; 	     (rainy 68 80 FALSE yes)
-;; 	     (rainy 65 70 TRUE no)
-;; 	     (overcast 64 65 TRUE yes)
-;; 	     (sunny 72 95 FALSE no)
-;; 	     (sunny 69 70 FALSE yes)
-;; 	     (rainy 75 80 FALSE yes)
-;; 	     (sunny 75 70 TRUE yes)
-;; 	     (overcast 72 90 TRUE yes)
-;; 	     (overcast 81 75 FALSE yes)
-;; 	     (rainy 71 91 TRUE no))))
+(defmacro doitems ((one n list &optional out) &body body )
+  `(let ((,n -1))
+     (dolist (,one ,list ,out)  (incf ,n) ,@body)))
+
+(defmacro docols ((cell head row tbl &optional out) &body body)
+  `(mapcar
+    #'(lambda (,cell ,head)
+	(unless (slot-value ,header 'ignore)
+	  ,@body))
+    ,row
+    (table-cols ,tbl)))
+
+(defstruct table txt cols rows)
+
+(defun data (&keys name cols rows)
+  (labels ((ignorep (word) (find #\? (symbol-name word))))
+    (let ((tbl (make-table)))
+      (with-slots (cols row txt) tbl
+	(setf txt  name
+	      col  cols)
+	  (dolist (row rows)
+	  (docols (cell head row tbl)
+		  (+= head cell))))
+      tbl)))
+	   
+(defun weather ()
+  (tbl
+   :name   'weather
+   :cols  (list (
+   :rows    '((sunny 85 85 FALSE no)
+	     (sunny 80 90 TRUE no)
+	     (overcast 83 86 FALSE yes)
+	     (rainy 70 96 FALSE yes)
+	     (rainy 68 80 FALSE yes)
+	     (rainy 65 70 TRUE no)
+	     (overcast 64 65 TRUE yes)
+	     (sunny 72 95 FALSE no)
+	     (sunny 69 70 FALSE yes)
+	     (rainy 75 80 FALSE yes)
+	     (sunny 75 70 TRUE yes)
+	     (overcast 72 90 TRUE yes)
+	     (overcast 81 75 FALSE yes)
+	     (rainy 71 91 TRUE no))))
