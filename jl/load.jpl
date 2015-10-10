@@ -1,0 +1,10 @@
+loaded = isdefined(:loaded) ? loaded : Dict()
+					   
+function load(file)
+   file=string(file,".jl")
+   if !get(loaded,file,false)
+       loaded[file]= true
+       include(file)       
+   end
+end
+
