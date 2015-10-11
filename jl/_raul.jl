@@ -91,11 +91,13 @@ macro ok(ex,msgs...)
       try    
         if ! $ex
           _fails += 1
-          println(string("Assertion failed: ",$(msgs)))
+      println(string("Assertion failed: ",
+                     $(msgs)))
         end
       catch e
         _fails += 1
-        println(string("Exception: ",$(msgs)))
+        println(string("Exception: ",
+                     $(string(msgs))))
       end)
 end    
 

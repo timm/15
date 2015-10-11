@@ -2,7 +2,7 @@ load(:one)
 
 @spy function fred()
     @ok 2==1 
-    @ok 3==3/"a"
+    @ok 3== 3/"a" "oh shit"
     @ok 4==4
 end
 
@@ -19,10 +19,6 @@ function of(d,keys...)
     end
     out
 end
-
-Base.call(x::Number, arg) = x * arg
-
-println(o(d1,a,A))
 
 
 
