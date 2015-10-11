@@ -1,7 +1,16 @@
 println("# Welcome to Raul's Julia (v0.1)")
 
 #=
-These is Raul's tweaks of Julia.
+These are Timm's tweaks of Julia, which I call
+_Raul_. 
+
+Copyright (C) 2015 Tim Menzies<tim.menzies@gmail.com>
+
+This work is free. You can redistribute it and/or
+modify it under the terms of the Do What The Fuck
+You Want To Public License, Version 2, as published
+by Sam Hocevar. See http://www.wtfpl.net/faq/ for
+more details.
 
 ## Usage:
 
@@ -32,20 +41,22 @@ for Where's Charley?, The Threepenny Opera and
 Nine. During the 1980s, he worked in several films,
 receiving nominations for the Golden Globe Awards,
 for his performance in Tempest, and Kiss of the
-Spider Woman, winning the National Board of Review
-Award for Best Actor for the latter.
+Spider Woman (!!!!!!), winning the National Board of
+Review Award for Best Actor for the latter.
 
-In 1991 and 1993, Juliá portrayed Gomez Addams
+In 1991 and 1993, Juliá portrayed Gomez Addams (!!)
 in two film adaptations of The Addams Family. In
-1994, he filmed The Burning Season, for which he
-won a Golden Globe Best Actor award, and a film
-adaptation of the Street Fighter video
-games. Later that year, Juliá suffered several
-health afflictions, eventually dying after
-suffering a stroke. His funeral was held in
-Puerto Rico, being attended by thousands. For
-his work in The Burning Season, Juliá won a
-posthumous Golden Globe and Emmy Award.
+1994, he filmed The Burning Season, for which he won
+a Golden Globe Best Actor award, and a film
+adaptation of the Street Fighter video games.
+
+Late in 1994, Juliá suffered several health
+afflictions, eventually dying after suffering a
+stroke at the age of 54. His funeral was held in
+Puerto Rico, being attended by thousands. For his
+work in The Burning Season, Juliá won a posthumous
+Golden Globe and Emmy Award.
+
 
 =#        
 
