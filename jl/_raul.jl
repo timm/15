@@ -52,7 +52,7 @@ suffered several health afflictions, eventually
 dying after suffering a stroke at the age of 54. For
 his work in The Burning Season, Juliá won a
 posthumous Golden Globe and Emmy Award.  His funeral
-was held in Puerto Rico, being attended by
+was held in Puerto Rico, and was attended by
 thousands.
 
 =#        
@@ -99,13 +99,11 @@ macro ok(ex,msgs...)
       try    
         if ! $ex
           _fails += 1
-      println(string("Assertion failed: ",
-                     $(msgs)))
+          println(string("Assertion failed: ", $msgs))
         end
       catch e
         _fails += 1
-        println(string("Exception: ",
-                     $(string(msgs))))
+        println(string("Exception: ", $msgs))
       end)
 end    
 
