@@ -46,7 +46,7 @@ function load(files...)
             include(file)       
         end
     end
-end
+end 
 
 #------------------------------------
 # test engine
@@ -57,14 +57,13 @@ _fails = 0
 # if crash or fails, _fails += 1
 macro assert(ex)
     :(global _tries,_fails;
-      try  
-        _tries += 1
+      _tries += 1;
+      try    
         if ! $ex
           _fails += 1
           println(string("Assertion failed: ",$(string(ex))))
         end
       catch e
-        crashed = true
         _fails += 1
         println(string("Exception: ",$(string(ex))))
       end)
