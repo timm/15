@@ -2,7 +2,7 @@ load(:one)
 
 @spy function fred()
     @ok 2==1 
-    @ok 3== 3/"a" "oh shit"
+    @ok 3== 3/"a" "oh dear"
     @ok 4==4
 end
 

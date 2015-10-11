@@ -1,15 +1,14 @@
 println("# Welcome to Raul's Julia (v0.1)")
 
 #=
-These are Timm's tweaks of Julia, which I call _Raul_. 
+Here are Timm's tweaks of Julia, which I call _Raul_. 
 
 Copyright (C) 2015 Tim Menzies<tim.menzies@gmail.com>
 
-This work is free. You can redistribute it and/or
-modify it under the terms of the Do What The Fuck
-You Want To Public License, Version 2, as published
-by Sam Hocevar. See http://www.wtfpl.net/faq/ for
-more details.
+This work is free. You can redistribute it and/or modify it under the
+terms of the Do What The Fuck You Want To Public License, Version 2, as
+published by Sam Hocevar. See http://www.wtfpl.net/faq/ for more
+details.
 
 ## Usage:
 
@@ -21,9 +20,8 @@ For exampls of the `@ok` and `@spy` macro, see
 
     https://github.com/timm/15/blob/master/jl/oneok.jl
 
-For examples of `load` function, see the following files.
-Note that they contain an `include` loop, which `load`
-fixes.
+For examples of `load` function, see the following files.  Note that
+they contain an `include` loop, which `load` fixes.
     
     https://github.com/timm/15/blob/master/jl/one.jl
     https://github.com/timm/15/blob/master/jl/two.jl
@@ -31,29 +29,25 @@ fixes.
 
 ## Why is this called Raul? 
 
-I'm glad you asked.  Raúl Rafael Juliá y Arcelay
-(March 9, 1940 – October 24, 1994) is one of my all
-time favorite actors. Born in Puerto Rican, he first
-attracted notice in two television series, Love of
-Life and Sesame Street.  Between 1974 and 1982,
-Juliá received Tony Award nominations for Where's
-Charley?, The Threepenny Opera and Nine. During the
-1980s, he worked in several films, receiving
-nominations for the Golden Globe Awards, for his
-performance in Tempest, and Kiss of the Spider Woman
-(!!!!!!), winning the National Board of Review Award
-for Best Actor for the latter.  In 1991 and 1993,
-Juliá portrayed Gomez Addams (!!)  in two film
-adaptations of The Addams Family. In 1994, he filmed
-The Burning Season, for which he won a Golden Globe
-Best Actor award, and a film adaptation of the
-Street Fighter video games.  Late in 1994, Juliá
-suffered several health afflictions, eventually
-dying after suffering a stroke at the age of 54. For
-his work in The Burning Season, Juliá won a
-posthumous Golden Globe and Emmy Award.  His funeral
-was held in Puerto Rico, and was attended by
-thousands.
+I'm glad you asked.  Raúl Rafael Juliá y Arcelay (March9,1940 to
+Oct24,1994) is one of my all time favorite actors.
+
+Born in Puerto Rican, he first attracted notice in two television
+series, Love of Life and Sesame Street.  Between 1974 and 1982, Juliá
+received Tony Award nominations for Where's Charley?, The Threepenny
+Opera and Nine. During the 1980s, he worked in several films, receiving
+nominations for the Golden Globe Awards, for his performance in Tempest,
+and Kiss of the Spider Woman (!!!!!!), winning the National Board of
+Review Award for Best Actor for the latter.  In 1991 and 1993, Juliá
+portrayed Gomez Addams (!!)  in two film adaptations of The Addams
+Family. In 1994, he filmed The Burning Season, for which he won a Golden
+Globe Best Actor award, and a film adaptation of the Street Fighter
+video games.
+
+Late in 1994, Juliá suffered several health afflictions, eventually
+dying after suffering a stroke at the age of 54. For his work in The
+Burning Season, Juliá won a posthumous Golden Globe and Emmy Award.  His
+funeral was held in Puerto Rico, and was attended by thousands.
 
 =#        
 
@@ -65,7 +59,7 @@ _loaded = Dict()
 function load(files...)
     for file = files
         file="$(file).jl"
-        if !get(_loaded,file,false)
+        if ! get(_loaded,file,false)
             println("# loading $(file)")
             _loaded[file]= true
             include(file)       
@@ -78,15 +72,19 @@ end
 
 macro spy(ex)
     local what=ex.args[1].args[1]
-    :($ex;
+    :(#define the function
+      $ex;
+      # print the function's name
       println(string("\n# ", $(string(what))));
+      # call the function
       $(ex.args[1]))
 end
 
 #------------------------------------------------
 # test engine
 # Keeps a global count of all tries and failes.
-# Also, programming exceptions don't stop the tests.
+# Also, don't let any programming exceptions
+# stop the test suite.
 
 _tries = 0
 _fails = 0
@@ -103,7 +101,7 @@ macro ok(ex,msgs...)
         end
       catch e
         _fails += 1
-        println(string("Exception: ", $msgs))
+        println(string("Exception for: ", $msgs))
       end)
 end    
 
