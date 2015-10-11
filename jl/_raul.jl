@@ -41,7 +41,7 @@ function load(files...)
     for file = files
         file="$(file).jl"
         if !get(_loaded,file,false)
-            println("# loading $(file) ...")
+            println("# loading $(file)")
             _loaded[file]= true
             include(file)       
         end
@@ -59,8 +59,7 @@ macro assert(ex)
     :(global _tries,_fails;
       try  
         _tries += 1
-        result = $ex
-        if ! result
+        if ! $ex
           _fails += 1
           println(string("Assertion failed: ",$(string(ex))))
         end

@@ -1,11 +1,10 @@
-load(:one,:oneok)
+load(:one)
 
 @ok function fred()
-    @assert 1==2/"a"
-    @assert 3==3
+    @assert 2==1
+    @assert 3==3/"a"
     @assert 4==4
 end
 
-
-_asserts()
+#_asserts()
 
