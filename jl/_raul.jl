@@ -1,8 +1,7 @@
 println("# Welcome to Raul's Julia (v0.1)")
 
 #=
-These are Timm's tweaks of Julia, which I call
-_Raul_. 
+These are Timm's tweaks of Julia, which I call _Raul_. 
 
 Copyright (C) 2015 Tim Menzies<tim.menzies@gmail.com>
 
@@ -33,30 +32,28 @@ fixes.
 ## Why is this called Raul? 
 
 I'm glad you asked.  Raúl Rafael Juliá y Arcelay
-(March 9, 1940 – October 24, 1994) was a Puerto
-Rican actor.  He received roles in two television
-series, Love of Life and Sesame Street.  Between
-1974 and 1982, Juliá received Tony Award nominations
-for Where's Charley?, The Threepenny Opera and
-Nine. During the 1980s, he worked in several films,
-receiving nominations for the Golden Globe Awards,
-for his performance in Tempest, and Kiss of the
-Spider Woman (!!!!!!), winning the National Board of
-Review Award for Best Actor for the latter.
-
-In 1991 and 1993, Juliá portrayed Gomez Addams (!!)
-in two film adaptations of The Addams Family. In
-1994, he filmed The Burning Season, for which he won
-a Golden Globe Best Actor award, and a film
-adaptation of the Street Fighter video games.
-
-Late in 1994, Juliá suffered several health
-afflictions, eventually dying after suffering a
-stroke at the age of 54. His funeral was held in
-Puerto Rico, being attended by thousands. For his
-work in The Burning Season, Juliá won a posthumous
-Golden Globe and Emmy Award.
-
+(March 9, 1940 – October 24, 1994) is one of my all
+time favorite actors. Born in Puerto Rican, he first
+attracted notice in two television series, Love of
+Life and Sesame Street.  Between 1974 and 1982,
+Juliá received Tony Award nominations for Where's
+Charley?, The Threepenny Opera and Nine. During the
+1980s, he worked in several films, receiving
+nominations for the Golden Globe Awards, for his
+performance in Tempest, and Kiss of the Spider Woman
+(!!!!!!), winning the National Board of Review Award
+for Best Actor for the latter.  In 1991 and 1993,
+Juliá portrayed Gomez Addams (!!)  in two film
+adaptations of The Addams Family. In 1994, he filmed
+The Burning Season, for which he won a Golden Globe
+Best Actor award, and a film adaptation of the
+Street Fighter video games.  Late in 1994, Juliá
+suffered several health afflictions, eventually
+dying after suffering a stroke at the age of 54. For
+his work in The Burning Season, Juliá won a
+posthumous Golden Globe and Emmy Award.  His funeral
+was held in Puerto Rico, being attended by
+thousands.
 
 =#        
 
