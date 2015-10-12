@@ -1,1 +1,0 @@
-alias julia="/Applications/Julia-0.4.0.app/Contents/Resources/julia/bin/julia --load _load.jl "
