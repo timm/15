@@ -14,7 +14,7 @@ the = a(:epsilon => 1,
  #=
  INPUT:
  #------------------------------
- @def aa bb=1 cc=10+1
+ @has aa bb=1 cc=10+1
 
  someFun(x::Any) = println(1000000)
  someFun(x::aa)  = println(x.bb)
@@ -42,9 +42,9 @@ the = a(:epsilon => 1,
  
  =#
 
-println(macroexpand(:(@def aa bb=1 cc=10+1)))
+println(macroexpand(:(@has aa bb=1 cc=10+1)))
 
-@def aa bb=1 cc=10+1
+@has aa bb=1 cc=10+1
 
 someFun(x::Any) = println(1000000)
 someFun(x::aa)  = println(x.bb)

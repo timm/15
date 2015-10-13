@@ -116,7 +116,7 @@ end
 # right default values
 # e.g. @def emp age=0 salary=10000
 
-macro def(typename, pairs...)
+macro has(typename, pairs...)
     name = esc(symbol(string(typename,0)))
     tmp  = esc(symbol("tmp"))
     ones = [x.args[1] for x in pairs]
@@ -129,3 +129,20 @@ macro def(typename, pairs...)
       end)
 end
 
+# function lines()
+#     f = open(file)
+#     try
+#         while !eof(f)
+#             produce(readline(f))
+#         end
+#     catch e
+#         nothing
+#     finally
+#         close(f)
+#     end
+# end
+
+# for line in Task(() -> lines("_raul.jl"))
+#    println(line)     
+# end
+        
