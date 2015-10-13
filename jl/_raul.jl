@@ -111,4 +111,21 @@ function oks()
     println("Pass: $(_tries - _fails); Fails: $_fails")
 end
 
+#------------------------------------------------
+# define types and a constructor that drops in the
+# right default values
+# e.g. @def emp age=0 salary=10000
+
+macro def(typename, pairs...)
+    name = esc(symbol(string(typename,0)))
+    tmp  = esc(symbol("tmp"))
+    ones = [x.args[1] for x in pairs]
+    twos = [x.args[2] for x in pairs]
+    :(type $(typename)
+         $(ones...)
+      end;
+      function $(name)()
+         $(typename)($(twos...))
+      end)
+end
 
