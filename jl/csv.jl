@@ -13,6 +13,8 @@
      rows=[],
      header=[])
 
+## xxx to do. extract the open file stuff from here
+## to a source that knows about files
 function rows(my::csv, file)
   """return non-empty rows, divided into cells
      on 'my.sep', with all whitespace
