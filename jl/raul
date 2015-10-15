@@ -1,2 +1,5 @@
 Raul=$(pwd)
-alias julia="/Applications/Julia-0.4.0.app/Contents/Resources/julia/bin/julia --load ${Raul}/_raul.jl "
+Bin=/usr/local/bin/julia
+App=/Applications/Julia-0.4.0.app/Contents/Resources/julia/bin/julia
+
+alias julia="$Bin --load ${Raul}/_raul.jl "
