@@ -1,6 +1,9 @@
 # for x in Task(() -> generator(3))
+#macro task(ex)
+ #   :(Task(()->$(esc(ex))))
+#end
 
-@has(csv,
+@has(CSV,
      sep       = ',',
      ignoreCol = '?',
      float     = '$',
@@ -17,15 +20,15 @@
 
 ## xxx to do. extract the open file stuff from here
 ## to a source that knows about files
-function rows(my::csv, file)
+function rows(csv::CSV, file)
   """return non-empty rows, divided into cells
-     on 'my.sep', with all whitespace
+     on 'csv.sep', with all whitespace
      pruned away, with all broken lines
      joined to the next one."""
   empty(s)        = length(s) == 0
-  broken(s)       = s[end] == my.sep
-  nocomment(s)    = replace(s,my.comment,"")
-  nowhitespace(s) = replace(s,my.white,"")
+  broken(s)       = s[end] == csv.sep
+  nocomment(s)    = replace(s,csv.comment,"")
+  nowhitespace(s) = replace(s,csv.white,"")
   prep(s)         = s |> nocomment |> nowhitespace
   function worker(b4 = "",
                   f  = open(file,"r"))
@@ -36,7 +39,7 @@ function rows(my::csv, file)
       elseif broken(line) # if ends with "," we'll
         b4 = b4 * line    # need to join it to next                    
       else
-        produce( split(b4 * line, my.sep) )
+        produce( split(b4 * line, csv.sep) )
         b4 = ""
       end end 
     close(f)
@@ -44,12 +47,12 @@ function rows(my::csv, file)
   Task(worker)
 end
 
-function cols(my::csv,src)
+function cols(csv::CSV,src)
   "return columns not labelled ?XXX." 
   function worker(header = [],
                   ln     = consume(src))
     for (n,s) in enumerate(ln)
-      if s[1] != my.ignoreCol
+      if s[1] != csv.ignoreCol
         push!(header,n)
       end end
     for ln in src
@@ -58,7 +61,7 @@ function cols(my::csv,src)
   Task(worker)
 end
 
-c=csv0()
+c=CSV0()
 
 for ln in rows(c,"weather.csv")
   println(ln)
