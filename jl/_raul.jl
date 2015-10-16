@@ -121,8 +121,7 @@ macro has(typename, pairs...)
     tmp  = esc(symbol("tmp"))
     ones = [x.args[1] for x in pairs]
     twos = [x.args[2] for x in pairs]
-    sets = [:($tmp.$(x.args[1]) = $(x.args[1]))
-            for x in pairs]
+    sets = [:($tmp.$x = $x) for x in ones]
     :(type $(typename)
          $(ones...)
       end;
