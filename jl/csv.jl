@@ -12,7 +12,8 @@
      klass     = '!',
      comment   = r"#.*$",
      white     = r"[ \t\r\n]*",
-     era       = 256)
+     era       = 256
+     src       = STRINGER(""))
 
 @has(table,
      rows=[],
@@ -26,47 +27,79 @@
 #  with all broken lines joined to the next one 
 #  """ ->
 
-function rows(csv::CSV, file)
-  empty(s)     = length(s) == 0
-  broken(s)    = s[end] == csv.sep
-  nocomment(s) = replace(s,csv.comment,"")
-  nowhites(s)  = replace(s,csv.white,"")
-  prep(s)      = s |> nocomment |> nowhitespace
-  b4 = ""
-  f  = open(file,"r")
-  for line in eachline(f)
-    line = prep(line) 
-    if empty(line)
-      continue
-    elseif broken(line) # if ends with "," we'll
-      b4 = b4 * line    # need to join it to next                    
-    else
-      produce( split(b4 * line, csv.sep) )
-      b4 = ""
-    end end 
-  close(f)
+type ZIPPER has  end
+type STRINGER has end
+
+function lines(x::STRINGER,tmp=[])
+  function worker()
+    for ch in x.has
+      if ch == '\n'
+        produce(string(tmp...))
+        tmp=[]
+      else
+        push!(tmp,ch)
+      end
+      if length(tmp) > 0
+        produce(string(tmp...))
+      end end end
+  Task(worker)
 end
 
-function cols(csv::CSV,src)
- header = []
- ln     = consume(src)
- for (n,s) in enumerate(ln)
-   if s[1] != csv.ignoreCol
-     push!(header,n)
-   end end
- for ln in src
-   produce([ln[n] for n in header]) 
-end end
+function lines(x::FILER)
+  function worker()
+    f = open(x.has,"r")
+    for line in eachline(f)
+      produce(line)
+    end
+    close(f)
+  end
+  Task(worker)
+end
+      
+function rows(csv::CSV, file)
+  function worker()
+    empty(s)     = length(s) == 0
+    broken(s)    = s[end] == csv.sep
+    nocomment(s) = replace(s,csv.comment,"")
+    nowhites(s)  = replace(s,csv.white,"")
+    prep(s)      = s |> nocomment |> nowhites
+    b4 = ""
+    for line in csv.src
+      line = prep(line) 
+      if empty(line)
+        continue
+      elseif broken(line) # if ends with "," we'll
+        b4 = b4 * line    # need to join it to next                    
+      else
+        produce( split(b4 * line, csv.sep) )
+        b4 = ""
+      end end end
+  Task(worker)
+end
 
-c=CSV0()
+function cols(csv::CSV)
+  function worker()
+    header = []
+    ln     = consume(csv.src)
+    for (n,s) in enumerate(ln)
+      if s[1] != csv.ignoreCol
+        push!(header,n)
+      end end
+    for ln in src
+      produce([ln[n] for n in header]) 
+    end end
+  Task(worker)
+end
 
-for ln in @task rows(c,"weather.csv")
+c=CSV0(src=FILER("weather.csv"))
+
+for ln in rows(c)
  println(ln)
 end
 
-for ln in @task cols(c,
+for ln in cols(c,
                rows(c,"weather.csv"))
-   println(ln)
+   println(">==",ln)
 end
 
 
