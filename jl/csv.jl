@@ -57,13 +57,12 @@ function lines(x::FILER)
 end
       
 function rows(csv::CSV, file)
-  function worker()
+  function worker(b4 = "")
     empty(s)     = length(s) == 0
     broken(s)    = s[end] == csv.sep
     nocomment(s) = replace(s,csv.comment,"")
     nowhites(s)  = replace(s,csv.white,"")
     prep(s)      = s |> nocomment |> nowhites
-    b4 = ""
     for line in csv.src
       line = prep(line) 
       if empty(line)
@@ -78,27 +77,26 @@ function rows(csv::CSV, file)
 end
 
 function cols(csv::CSV)
-  function worker()
-    header = []
-    ln     = consume(csv.src)
-    for (n,s) in enumerate(ln)
-      if s[1] != csv.ignoreCol
-        push!(header,n)
-      end end
-    for ln in src
-      produce([ln[n] for n in header]) 
-    end end
+  function worker(header = [])
+    for ln in rows(csv)
+      if header == []
+        for (n,s) in enumerate(ln)
+          if s[1] != csv.ignoreCol
+            push!(header,n)
+          end end
+      else
+        produce([ln[n] for n in header]) 
+      end end end
   Task(worker)
 end
 
 c=CSV0(src=FILER("weather.csv"))
 
 for ln in rows(c)
- println(ln)
+  println(ln)
 end
 
-for ln in cols(c,
-               rows(c,"weather.csv"))
+for ln in cols(c)
    println(">==",ln)
 end
 
