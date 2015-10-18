@@ -30,9 +30,9 @@
 type ZIPPER has  end
 type STRINGER has end
 
-function lines(x::STRINGER,tmp=[])
+function lines(x::STRINGER,src,tmp=[])
   function worker()
-    for ch in x.has
+    for ch in src
       if ch == '\n'
         produce(string(tmp...))
         tmp=[]
@@ -45,9 +45,9 @@ function lines(x::STRINGER,tmp=[])
   Task(worker)
 end
 
-function lines(x::FILER)
+function lines(x::FILER,src)
   function worker()
-    f = open(x.has,"r")
+    f = open(src,"r")
     for line in eachline(f)
       produce(line)
     end
@@ -55,7 +55,23 @@ function lines(x::FILER)
   end
   Task(worker)
 end
-      
+
+function lines(x:ZIPPER,src)
+  zip, file =match(r"(.*.zip)/(.*)$",src)
+  function worker()
+    r = ZipFile.Reader(zip)
+    for f in r.files
+      if f == file
+        for line in eachline(f)
+          produce(line)
+        end
+        break
+      end end
+    close(r)
+  end
+  Task(worker)
+end
+
 function rows(csv::CSV, file)
   function worker(b4 = "")
     empty(s)     = length(s) == 0
