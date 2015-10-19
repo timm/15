@@ -118,14 +118,17 @@ end
 
 macro has(typename, pairs...)
     name = esc(symbol(string(typename,0)))
-    tmp  = esc(symbol("tmp"))
-    ones = [x.args[1] for x in pairs]
-    twos = [x.args[2] for x in pairs]
+    x    = esc(symbol("x"))
+    ones = [  x.args[1]  for x in pairs ]
+    twos = [  x.args[2]  for x in pairs ]
+    sets = [ :($x.$y=$y) for y in ones  ]
     :(type $(typename)
          $(ones...)
       end;
-      function $(name)()
-         $(typename)($(twos...))
+      function $(name)(; $(pairs...) )
+        $x = $(typename)($(twos...))
+        $(sets...)
+        $x
       end)
 end
 

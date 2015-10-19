@@ -2,4 +2,4 @@ Raul=$(pwd)
 Bin=/usr/local/bin/julia
 App=/Applications/Julia-0.4.0.app/Contents/Resources/julia/bin/julia
 
-alias julia="$Bin --load ${Raul}/_raul.jl "
+alias julia="$App --load ${Raul}/_raul.jl "
