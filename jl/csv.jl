@@ -12,7 +12,7 @@
      klass     = '!',
      comment   = r"#.*$",
      white     = r"[ \t\r\n]*",
-     era       = 256
+     era       = 256,
      src       = STRINGER(""))
 
 @has(table,
@@ -29,6 +29,7 @@
 
 type ZIPPER has  end
 type STRINGER has end
+type FILER has end
 
 function lines(x::STRINGER,src,tmp=[])
   function worker()
@@ -56,8 +57,10 @@ function lines(x::FILER,src)
   Task(worker)
 end
 
-function lines(x:ZIPPER,src)
-  zip, file =match(r"(.*.zip)/(.*)$",src)
+function lines(x::ZIPPER,src)
+  zip, file = match(r"(.*\.zip)/(.*)$",src)
+  print(zip)
+  print(src)
   function worker()
     r = ZipFile.Reader(zip)
     for f in r.files
@@ -71,6 +74,8 @@ function lines(x:ZIPPER,src)
   end
   Task(worker)
 end
+
+
 
 function rows(csv::CSV, file)
   function worker(b4 = "")
@@ -106,14 +111,14 @@ function cols(csv::CSV)
   Task(worker)
 end
 
-c=CSV0(src=FILER("weather.csv"))
-
-for ln in rows(c)
-  println(ln)
-end
-
-for ln in cols(c)
-   println(">==",ln)
-end
+#c=CSV0(src=FILER("weather.csv"))
+#
+#for ln in rows(c)
+#  println(ln)
+#end
+#
+#for ln in cols(c)
+#   println(">==",ln)
+#end
 
 
