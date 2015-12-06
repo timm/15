@@ -72,21 +72,29 @@ class ZDT1(Model):
               Less("f2",maker=f2)]
 
 class XY:
-    def __init__(i,east,west,big=0.025,values=[],value=same):        
-        i.values, i.value, i.big = values, value, big
-        example    = value(east)
-        i.w        = len(example)
-        i.lo,i.hi  = [0 for _ in example], [0 for _ in example]
-        i.one,i.east, i.west = east,east,west     
-        i.update(east)
-        i.update(west)
-        i.c = i.dist(i.east,i.west)
+    def __init__(i,inits, value=same, big=0.025):
+        i.big, one, i.values,i.value = big,inits[0],[],value
+        example= value(one)
+        i.n    = len(example)
+        i.lo   = [0 for _ in example]
+        i.hi   = [0 for _ in example]
+        map(i.update,inits)
+        i.east = i.furthest(one)
+        i.west = i.furthest(i.east)
+        i.c    = i.dist(i.east,i.west)
     def update(i,one):
         i.values += [one]
         for n,(lo,hi,new) in enumerate(zip(i.lo,i.hi,
                                           i.value(one))):
             if new > hi: i.hi[n] = new
             if new < lo: i.lo[n] = new
+    def furthest(i,one):
+        d, out = 0, one
+        for two in i.values:
+            tmp = i.dist(one,two)
+            if tmp > d:
+                d,out = tmp,two
+        return out
     def dist(i,xs,ys,d=0):
         for n,(x,y,lo,hi) in enumerate(zip(i.value(xs),
                                            i.value(ys),
@@ -94,16 +102,13 @@ class XY:
             x  = (x - lo)/(hi - lo + 0.001)
             y  = (y - lo)/(hi - lo + 0.001)
             d += (x - y)**2
-        return sqrt(d) / sqrt(i.w)
+        return sqrt(d) / sqrt(i.n)
     def grow(i,east,west):
         print("-",end="")
         b4, i.east, i.west = i.values, east,west
         i.c = i.dist(i.east,i.west)
-        print("!",end="")
-        if i.c > 1:
-            print(i.c,i.value(i.east),i.value(i.west))
         i.values[:] = [] 
-        map(i.__add__,b4)
+        map(i.__add__,[i.east,i.west]+b4)
     def __add__(i,one):
         a = i.dist(i.east,one)
         b = i.dist(i.west,one)
@@ -115,27 +120,58 @@ class XY:
             return i + one
         else:
             i.update(one)
-            c  = i.c
-            i.c = min(i.c,1)
-            x  = (a**2 + c**2 - b**2) / (2*c)
-            x  = min(x,a)
-            
-            if x>a:
-                print(a,b,c,x)
+            x  = (a**2 + i.c**2 - b**2) / (2*i.c)
+            if x > a:
+                x = a
             y  = sqrt(a**2 - x**2)
-            one.x, one.y = x,y
+            one.a, one.b, one.x, one.y = a,b,x,y
+            one.easterly = a<b
             return x,y
+    def half(i,easterly=True):
+        return [x for i.values if x.easterly==easterly]
+    def bounds(i):
+        xs= sorted([one.x for one in i.values])
+        ys= sorted([one.y for one in i.values])
+        return (xs[0]*0.95,xs[-1]*1.05),(ys[0]*0.95,ys[-1]*1.05)
+    
+import time
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
-z=ZDT1()
+def graph_it(population, model, scale):
+    directory = 'models/'
+    file_name = directory + model.__class__.__name__
+    f1 = np.array([one.x for one in population])
+    f2 = np.array([one.y for one in population])
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(f1, f2, s = 40, color = '#000080', alpha=0.80)
+    ax.set_xlim(scale[0])
+    ax.set_ylim(scale[1])
+    ax.set_xlabel('f1')
+    ax.set_ylabel('f2')
+    fig.savefig(file_name)
+                
+model=ZDT1()
 m=0
-f = lambda x:x.decs
-grid=XY(z.one(),z.one(),value=f)
-for _ in range(100):   
-    x = z.one()
-    y = z.one()
+seed(12)
+decs = lambda x:x.decs
+grid=XY([model.one() for _ in range(32)],
+        value=decs)
+for _ in range(10000):   
+    x = model.one()
+    y = model.one()
     grid + x
     grid + y
-    if z.bdom(x,y): m += 1
+    if model.bdom(x,y): m += 1
 print(m,len(grid.values))
-for one in grid.values:
-    print(one.x,one.y)
+print(grid.bounds())
+print(grid.east.x,grid.east.y)
+print(grid.west.x,grid.west.y)
+
+graph_it(grid.values,model,grid.bounds())
+print(len([_ for x in grid.values if x.easterly]))
+
+#for one in grid.values:
+ #   print(one.x,one.y)
