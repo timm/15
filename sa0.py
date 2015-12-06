@@ -43,8 +43,7 @@ class Model:
         x.objs = None
         return x
     def eval(i,x):
-        if not x.objs:
-            x.objs = [f(x) for f in i.objs]
+        x.objs = [f(x) for f in i.objs]
         return x
     def one(i):
         return i.eval(i())
