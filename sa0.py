@@ -14,6 +14,7 @@ class o:
   def __getitem__(i,k)   : return i.__dict__[k]
   def __repr__(i)        : return 'o'+str(i.__dict__)
 
+def same(x): return x
 def lt(x,y): return x < y
 def gt(x,y): return x > y
 
@@ -70,13 +71,57 @@ class ZDT1(Model):
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
 
+class XY:
+    def __init__(i,east,west,big=0.025):
+        i.w   = len(east)
+        i.lo  = [0] * i.w
+        i.hi  = [0] * i.w
+        i.big = big
+        i.all = []
+        i.east, i.west = east,west     
+        i.updateRanges(east)
+        i.updateRanges(west)
+        i.c = i.dist(i.east,i.west)
+    def updateRanges(i,lst):
+       for n,(lo,hi,new) in enumerate(zip(i.lo,i.hi,lst)):
+            if new > hi: i.hi[n] = new
+            if new < lo: i.lo[n] = new
+    def dist(i,xs,ys,d=0):
+        for n,(x,y,lo,hi) in enumerate(zip(xs,ys,i.lo,i.hi)):           
+            x  = (x - lo)/(hi - lo + 0.00001)
+            y  = (y - lo)/(hi - lo + 0.00001)
+            d += (x - y)**2
+        return sqrt(d) / sqrt(i.w)
+    def grow(i,east,west,b4):
+        i.east, i.west = east,west
+        i.c = i.dist(i.east,i.west)
+        i.all = []
+        map(i.__add__,b4)
+    def __add__(i,lst):
+        a = i.dist(i.east,lst)
+        b = i.dist(i.west,lst)
+        if  a - i.c > i.big:
+            i.grow(i.east,lst,i.all)
+            return i + lst
+        elif b - i.c > i.big:
+            i.grow(lst,i.west,i.all)
+            return i + lst
+        else:
+            i.all += [lst]
+            c  = i.c
+            x  = (a**2 + c**2 - b**2) / (2*c)
+            x1 = min(max(x,1),0)
+            y  = sqrt(a**2 - x1**2)
+            return x,y
+
 z=ZDT1()
 m=0
-for _ in range(1000):
+f = lambda x:x.decs
+grid=XY(f(z.one()),f(z.one()))
+for _ in range(100000):   
     x = z.one()
     y = z.one()
+    grid + f(x)
+    grid + f(y)
     if z.bdom(x,y): m += 1
 print(m)
-
-#y = z()
-#print(z.eval(x))
