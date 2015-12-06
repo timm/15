@@ -49,13 +49,13 @@ class Model:
     def one(i):
         return i.eval(i())
     def bdom(i,x,y):
-        better1 = False
+        betterOnce = False
         for u,v,meta in zip(x.objs,y.objs,i.objs):
             if meta.better(u,v):
-                better1=True
+                betterOnce=True
             elif u != v:
                 return False
-        return better1
+        return betterOnce
 
 class ZDT1(Model):
   n=30
