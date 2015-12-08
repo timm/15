@@ -71,68 +71,98 @@ class ZDT1(Model):
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
 
+class Deltas:
+  def __init__(i,one,value=same):
+    i.value = value
+    i.cache = {}
+    lst     = value(one)
+    i.n     = len(lst)
+    i.lo    = [0 for _ in lst]
+    i.hi    = [0 for _ in lst]
+    i.update(one)
+  def update(i,one):
+    for n,(lo,hi,new) in enumerate(zip(i.lo, i.hi,
+                                       i.value(one))):
+      if new > hi: i.hi[n] = new
+      if new < lo: i.lo[n] = new
+  def dist(i,xs,ys):
+    a, b = id(xs), id(ys)
+    if a > b:
+      return i.dist(ys,xs)
+    k = (a,b)
+    if k in i.cache:
+      return i.cache[k]
+    else:
+      i.cache[k] = d = i.dist1(xs,ys)
+      return d
+  def dist1(i,xs,ys,d=0):
+    one = i.value(xs)
+    two = i.value(ys)
+    for n,(x,y,lo,hi) in enumerate(zip(one,two,
+                                       i.lo,i.hi)):           
+      x  = (x - lo)/(hi - lo + 0.001)
+      y  = (y - lo)/(hi - lo + 0.001)
+      d += (x - y)**2
+    return sqrt(d) / sqrt(i.n)
+  def furthest(i,one,all):
+    d, out = 0, one
+    for two in all:
+      tmp = i.dist(one,two)
+      if tmp > d:
+        d,out = tmp,two
+    return out
+
 class XY:
-    def __init__(i,inits, value=same, big=0.025):
-        i.big, one, i.values,i.value = big,inits[0],[],value
-        example= value(one)
-        i.n    = len(example)
-        i.lo   = [0 for _ in example]
-        i.hi   = [0 for _ in example]
-        map(i.update,inits)
-        i.east = i.furthest(one)
-        i.west = i.furthest(i.east)
-        i.c    = i.dist(i.east,i.west)
-    def update(i,one):
-        i.values += [one]
-        for n,(lo,hi,new) in enumerate(zip(i.lo,i.hi,
-                                          i.value(one))):
-            if new > hi: i.hi[n] = new
-            if new < lo: i.lo[n] = new
-    def furthest(i,one):
-        d, out = 0, one
-        for two in i.values:
-            tmp = i.dist(one,two)
-            if tmp > d:
-                d,out = tmp,two
-        return out
-    def dist(i,xs,ys,d=0):
-        for n,(x,y,lo,hi) in enumerate(zip(i.value(xs),
-                                           i.value(ys),
-                                           i.lo,i.hi)):           
-            x  = (x - lo)/(hi - lo + 0.001)
-            y  = (y - lo)/(hi - lo + 0.001)
-            d += (x - y)**2
-        return sqrt(d) / sqrt(i.n)
-    def grow(i,east,west):
-        print("-",end="")
-        b4, i.east, i.west = i.values, east,west
-        i.c = i.dist(i.east,i.west)
-        i.values[:] = [] 
-        map(i.__add__,[i.east,i.west]+b4)
-    def __add__(i,one):
-        a = i.dist(i.east,one)
-        b = i.dist(i.west,one)
-        if  a - i.c > i.big:
-            i.grow(i.east,one)
-            return i + one
-        elif b - i.c > i.big:
-            i.grow(one,i.west)
-            return i + one
-        else:
-            i.update(one)
-            x  = (a**2 + i.c**2 - b**2) / (2*i.c)
-            if x > a:
-                x = a
-            y  = sqrt(a**2 - x**2)
-            one.a, one.b, one.x, one.y = a,b,x,y
-            one.easterly = a<b
-            return x,y
-    def half(i,easterly=True):
-        return [x for i.values if x.easterly==easterly]
-    def bounds(i):
-        xs= sorted([one.x for one in i.values])
-        ys= sorted([one.y for one in i.values])
-        return (xs[0]*0.95,xs[-1]*1.05),(ys[0]*0.95,ys[-1]*1.05)
+  def __init__(i,inits, value=same, big=0.025,bins=10):
+    i.big, one, i.values,i.value = big,inits[0],[],value
+    i.bins = bins
+    i.deltas = Deltas(one,value=value)
+    i.cells   = [[[] for _ in range(bins)]
+                for _ in range(bins)]
+    map(i.update,inits)
+    i.east = i.deltas.furthest(one,    i.values)
+    i.west = i.deltas.furthest(i.east, i.values)
+    i.c    = i.deltas.dist(i.east,i.west)   
+  def update(i,one):
+    i.values += [one]
+    i.deltas.update(one)
+  def grow(i,east,west):
+    print("-",end="")
+    b4, i.east, i.west = i.values, east,west
+    i.c = i.deltas.dist(i.east,i.west)
+    i.values[:] = []
+    i.cells   = [[[] for _ in range(i.bins)]
+                for _ in range(i.bins)]
+    map(i.__add__,[i.east,i.west]+b4)
+  def __add__(i,one):
+    a = i.deltas.dist(i.east,one)
+    b = i.deltas.dist(i.west,one)
+    if  a - i.c > i.big:
+      i.grow(i.east,one)
+      return i + one
+    elif b - i.c > i.big:
+      i.grow(one,i.west)
+      return i + one
+    else:
+      i.update(one)
+      x  = (a**2 + i.c**2 - b**2) / (2*i.c)
+      if x > a:
+        x = a
+      y  = sqrt(a**2 - x**2)
+      one.a, one.b, one.x, one.y = a,b,x,y
+      x1,y1= int(x/(i.c/i.bins)), int(y*i.bins)
+      x1   = min(i.bins - 1, x1)
+      y1   = min(i.bins - 1, y1)
+      i.cells[x1][y1].append(one)
+      one.easterly = a<b
+      return x,y
+  def half(i,easterly=True):
+    return [x for x in i.values
+              if x.easterly==easterly]
+  def bounds(i):
+    xs= sorted([one.x for one in i.values])
+    ys= sorted([one.y for one in i.values])
+    return (xs[0]*0.95,xs[-1]*1.05),(ys[0]*0.95,ys[-1]*1.05)
     
 import time
 import matplotlib.pyplot as plt
@@ -175,3 +205,8 @@ print(len([_ for x in grid.values if x.easterly]))
 
 #for one in grid.values:
  #   print(one.x,one.y)
+
+for n1,x in enumerate(grid.cells):
+  for n2,y in enumerate(x):
+    if y:
+      print(n1,n2,len(y))
