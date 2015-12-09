@@ -4,15 +4,22 @@ sys.dont_write_bytecode = True
 import random,math
 
 
-r = random.random
+r    = random.random
+any  = random.choice
 seed = random.seed
 sqrt = math.sqrt
+
+def r3(x)    : return round(x,3)
+def r3s(lst) : return map(r3,lst)
 
 class o:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __setitem__(i,k,v) : i.__dict__[k] = v
   def __getitem__(i,k)   : return i.__dict__[k]
   def __repr__(i)        : return 'o'+str(i.__dict__)
+  def setOnce(i,k,v) :
+    if not k in i.__dict__:
+      i.__dict__[k] = v
 
 def same(x): return x
 def lt(x,y): return x < y
@@ -63,8 +70,8 @@ class ZDT1(Model):
     def f1(x):
       return x.decs[0]
     def f2(x):
-      g = 1 + 9*sum(x for x in x.decs[1:] )/(ZDT1.n-1)
-      return g*abs(1 - sqrt(x.decs[0]*g))
+      g = 1 + 9 * sum(x for x in x.decs[1:] )/(ZDT1.n-1)
+      return  g * abs(1 - sqrt(x.decs[0]*g))
     def dec(x):
       return An(x,lo=0,hi=1)
     i.decs = [dec(x) for x in range(ZDT1.n)]
@@ -148,17 +155,19 @@ class XY:
       x  = (a**2 + i.c**2 - b**2) / (2*i.c)
       if x > a:
         x = a
-      y  = sqrt(a**2 - x**2)
+      y = sqrt(a**2 - x**2)
       one.a, one.b, one.x, one.y = a,b,x,y
       x1,y1= int(x/(i.c/i.bins)), int(y*i.bins)
       x1   = min(i.bins - 1, x1)
       y1   = min(i.bins - 1, y1)
-      i.cells[x1][y1].append(one)
+      i.cells[x1][y1] += [one]
       one.easterly = a<b
       return x,y
   def half(i,easterly=True):
-    return [x for x in i.values
+    inits = [x for x in i.values
               if x.easterly==easterly]
+    return XY(inits,
+              value=i.value,big=i.big,bins=i.bins)
   def bounds(i):
     xs= sorted([one.x for one in i.values])
     ys= sorted([one.y for one in i.values])
@@ -182,20 +191,59 @@ def graph_it(population, model, scale):
     ax.set_xlabel('f1')
     ax.set_ylabel('f2')
     fig.savefig(file_name)
-                
+
+def gale0(model,repeats=256):
+  decs = lambda x:x.decs
+  grid = XY([model() for _ in xrange(repeats)],
+            value=decs)
+  for _ in range(10):
+    grid= grid.half(
+            model.bdom(grid.east,grid.west))
+
+
+  def smear(all,lo,hi,f=0.25,cf=0.5,value=same):
+  as,bs,cs = any(all), any(all), any(all)
+  tmp =[smear1(a,b,c,n)
+        for n,(a,b,c)
+        in  enumerate(zip(as.decs,
+                          bs.decs,
+                          cs.decs))]
+  return o(decs=tmp)
+  
+def smear1(a,b,c,n):
+  return bound(a + f*(b - c) if r()< cf else a,
+               lo[n], hi[n])
+
+def bound(x, lo, hi):
+  return (((x - lo) % (hi - lo)) + lo)
+
+gale0(ZDT1())
+
+exit()
 model=ZDT1()
 m=0
 seed(12)
 decs = lambda x:x.decs
 grid=XY([model.one() for _ in range(32)],
         value=decs)
-for _ in range(10000):   
+for _ in range(1000):   
     x = model.one()
     y = model.one()
     grid + x
     grid + y
     if model.bdom(x,y): m += 1
-print(m,len(grid.values))
+easterly = model.bdom(grid.east,grid.west)
+
+grid1 = grid.half(easterly)
+
+print("")
+print(r3s(grid.deltas.lo))
+print(r3s(grid1.deltas.lo))
+
+print(r3s(grid.deltas.hi))
+print(r3s(grid1.deltas.hi))
+
+print("grdi1",m,len(grid.values))
 print(grid.bounds())
 print(grid.east.x,grid.east.y)
 print(grid.west.x,grid.west.y)
@@ -210,3 +258,13 @@ for n1,x in enumerate(grid.cells):
   for n2,y in enumerate(x):
     if y:
       print(n1,n2,len(y))
+
+
+a=o(b=1,c=2)
+
+a.setOnce('b',10)
+a.setOnce('d',10)
+a.setOnce('d',11)
+print(a)
+
+
