@@ -119,27 +119,31 @@ class Deltas:
         d,out = tmp,two
     return out
 
-class XY:
-  def __init__(i,inits, value=same, big=0.025,bins=10):
+class Population:
+  "Holds individuals, knows their geometry."
+  def __init__(i,inits, value=same, big=0.025,bins=10,deltas=None):
     i.big, one, i.values,i.value = big,inits[0],[],value
     i.bins = bins
-    i.deltas = Deltas(one,value=value)
+    i._pos  = {}
+    i.deltas = deltas or Deltas(one,value=value)
     i.cells   = [[[] for _ in range(bins)]
                 for _ in range(bins)]
     map(i.update,inits)
     i.east = i.deltas.furthest(one,    i.values)
     i.west = i.deltas.furthest(i.east, i.values)
-    i.c    = i.deltas.dist(i.east,i.west)   
+    i.c    = i.deltas.dist(i.east,i.west)
+    print(i.c)
   def update(i,one):
-    i.values += [one]
     i.deltas.update(one)
+    i.values += [one]
   def grow(i,east,west):
     print("-",end="")
     b4, i.east, i.west = i.values, east,west
     i.c = i.deltas.dist(i.east,i.west)
     i.values[:] = []
-    i.cells   = [[[] for _ in range(i.bins)]
-                for _ in range(i.bins)]
+    i._pos      = {}
+    i.cells     = [[[] for _ in range(i.bins)]
+                   for _ in range(i.bins)]
     map(i.__add__,[i.east,i.west]+b4)
   def __add__(i,one):
     a = i.deltas.dist(i.east,one)
@@ -152,22 +156,31 @@ class XY:
       return i + one
     else:
       i.update(one)
-      x  = (a**2 + i.c**2 - b**2) / (2*i.c)
+      x = (a**2 + i.c**2 - b**2) / (2*i.c)
       if x > a:
         x = a
       y = sqrt(a**2 - x**2)
-      one.a, one.b, one.x, one.y = a,b,x,y
-      x1,y1= int(x/(i.c/i.bins)), int(y*i.bins)
-      x1   = min(i.bins - 1, x1)
-      y1   = min(i.bins - 1, y1)
-      i.cells[x1][y1] += [one]
-      one.easterly = a<b
+      print(r3s([a,b,i.c,x,y]))
+      binx, biny = i.bin(x), i.bin(y)
+      i.cells[ binx ][ biny ] += [one]
+      i._pos[id(one)] = o(x=x,y=y,binx=binx,
+                          biny=biny,a=a,b=b)
       return x,y
-  def half(i,easterly=True):
-    inits = [x for x in i.values
-              if x.easterly==easterly]
-    return XY(inits,
-              value=i.value,big=i.big,bins=i.bins)
+  def bin(i,x):
+    x = int(x/(i.c/i.bins))
+    return min(i.bins - 1, x)
+  def pos(i,x) :
+    return i._pos[id(x)]
+  def clone(i,inits=[]):
+    return Population(inits, value=i.value,
+                      big=i.big,bins=i.bins, deltas=i.deltas)
+  def best(i,want,most=0.33,cmp=lt):
+    if east is want:
+      return i.clone([x for x in i.values if
+                      i.pos(x).a/i.pos(x).b < most])
+    else:
+      return i.clone([x for x in i.values if
+                      i.pos(x).a/i.pos(x).b >  (1 - most)])
   def bounds(i):
     xs= sorted([one.x for one in i.values])
     ys= sorted([one.y for one in i.values])
@@ -192,22 +205,25 @@ def graph_it(population, model, scale):
     ax.set_ylabel('f2')
     fig.savefig(file_name)
 
-def gale0(model,repeats=256):
+def gale0(model,repeats=100):
   decs = lambda x:x.decs
-  grid = XY([model() for _ in xrange(repeats)],
-            value=decs)
+  pop  = Population([model() for _ in xrange(repeats)],
+                    value=decs)
+  map(pop.__add__,[model() for _ in xrange(repeats)])
+  #for i in pop.values:
+   # print(pop.pos(i).x,
+    #      pop.pos(i).y)
+  exit()
   for _ in range(10):
     grid= grid.half(
             model.bdom(grid.east,grid.west))
 
 
-  def smear(all,lo,hi,f=0.25,cf=0.5,value=same):
-  as,bs,cs = any(all), any(all), any(all)
-  tmp =[smear1(a,b,c,n)
-        for n,(a,b,c)
-        in  enumerate(zip(as.decs,
-                          bs.decs,
-                          cs.decs))]
+def smear(all,lo,hi,f=0.25,cf=0.5,value=same):
+  aa, bb, cc = any(all), any(all), any(all)
+  tmp =[smear1(a,b,c,n) for n,(a,b,c) in  enumerate(zip(aa.decs,
+                                                        bb.decs,
+                                                        cc.decs))]
   return o(decs=tmp)
   
 def smear1(a,b,c,n):
@@ -224,7 +240,7 @@ model=ZDT1()
 m=0
 seed(12)
 decs = lambda x:x.decs
-grid=XY([model.one() for _ in range(32)],
+grid=Population([model.one() for _ in range(32)],
         value=decs)
 for _ in range(1000):   
     x = model.one()
@@ -232,7 +248,8 @@ for _ in range(1000):
     grid + x
     grid + y
     if model.bdom(x,y): m += 1
-easterly = model.bdom(grid.east,grid.west)
+want = 0.3
+want = 1 - want if model.bdom(grid.west,grid.east) else want
 
 grid1 = grid.half(easterly)
 
