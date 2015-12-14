@@ -4,10 +4,12 @@ sys.dont_write_bytecode = True
 import random,math
 
 
-r    = random.random
-any  = random.choice
-seed = random.seed
-sqrt = math.sqrt
+r      = random.random
+any    = random.choice
+within = random.uniform
+seed   = random.seed
+sqrt   = math.sqrt
+exp    = math.exp
 
 def r3(x)    : return round(x,3)
 def r3s(lst) : return map(r3,lst)
@@ -119,9 +121,10 @@ class Deltas:
         d,out = tmp,two
     return out
 
-class Population:
+class Log:
   "Holds individuals, knows their geometry."
-  def __init__(i,inits, value=same, big=0.025,bins=10,deltas=None):
+  def __init__(i,inits, value=same,
+               big=0.025,bins=10,deltas=None):
     i.big, one, i.values,i.value = big,inits[0],[],value
     i.bins = bins
     i._pos  = {}
@@ -131,14 +134,13 @@ class Population:
     map(i.update,inits)
     i.east = i.deltas.furthest(one,    i.values)
     i.west = i.deltas.furthest(i.east, i.values)
-    i.c    = i.deltas.dist(i.east,i.west)
-    print(i.c)
+    i.grow(i.east,i.west)
   def update(i,one):
     i.deltas.update(one)
     i.values += [one]
   def grow(i,east,west):
-    print("-",end="")
-    b4, i.east, i.west = i.values, east,west
+    print("-",len(i.values),end="")
+    b4, i.east, i.west = i.values[:], east,west
     i.c = i.deltas.dist(i.east,i.west)
     i.values[:] = []
     i._pos      = {}
@@ -160,7 +162,6 @@ class Population:
       if x > a:
         x = a
       y = sqrt(a**2 - x**2)
-      print(r3s([a,b,i.c,x,y]))
       binx, biny = i.bin(x), i.bin(y)
       i.cells[ binx ][ biny ] += [one]
       i._pos[id(one)] = o(x=x,y=y,binx=binx,
@@ -172,9 +173,10 @@ class Population:
   def pos(i,x) :
     return i._pos[id(x)]
   def clone(i,inits=[]):
-    return Population(inits, value=i.value,
+    return Log(inits, value=i.value,
                       big=i.big,bins=i.bins, deltas=i.deltas)
   def best(i,want,most=0.33,cmp=lt):
+    print(i.east is want)
     if east is want:
       return i.clone([x for x in i.values if
                       i.pos(x).a/i.pos(x).b < most])
@@ -205,34 +207,75 @@ def graph_it(population, model, scale):
     ax.set_ylabel('f2')
     fig.savefig(file_name)
 
+def mutate(one,lo=[],hi=[],p=0.33, value=same):
+  return o(decs = [mutate1(old,p,lo[n],hi[n])
+                   for n,old
+                   in enumerate(value(one))])
+
+def mutate1(old,p,lo,hi):
+  x = (hi - lo)
+  return old if p >= r() else old - x + 2 * x * r()
+
+def decs(x): return x.decs
+    
+def sa(model, init=10,era=100,kmax=10000, aggr=sum,cooling=1):
+  log = Log([model() for one in xrange(init)],value=decs)
+  sb  = s = model()
+  eb  = e = aggr(model.eval(s).objs)
+  for k in xrange(kmax):
+    tick="."
+    t   = ((k+1)/kmax)**cooling
+    sn  = mutate(s,value=decs,
+                 lo=log.deltas.lo,
+                 hi=log.deltas.hi)
+    en  = aggr(model.eval(s).objs)
+    if sn < sb:
+      tick="!"
+      sb,eb = sb,eb
+    if sn < s:
+      tick="<"
+      s,e = sn,en
+    elif exp((en - e)/t) < r():
+      tick="?"
+      s,e = sn,en
+    print(tick,end="")
+    if (k % era) == 0: print("\n",eb," ",end="")
+  return eb,sb
+      
+e,s=sa(ZDT1())
+print(e)
+
+exit()
+
 def gale0(model,repeats=100):
-  decs = lambda x:x.decs
-  pop  = Population([model() for _ in xrange(repeats)],
+  pop  = Log([model() for _ in xrange(repeats)],
                     value=decs)
-  map(pop.__add__,[model() for _ in xrange(repeats)])
-  #for i in pop.values:
-   # print(pop.pos(i).x,
-    #      pop.pos(i).y)
-  exit()
   for _ in range(10):
-    grid= grid.half(
-            model.bdom(grid.east,grid.west))
-
-
-def smear(all,lo,hi,f=0.25,cf=0.5,value=same):
-  aa, bb, cc = any(all), any(all), any(all)
-  tmp =[smear1(a,b,c,n) for n,(a,b,c) in  enumerate(zip(aa.decs,
-                                                        bb.decs,
-                                                        cc.decs))]
-  return o(decs=tmp)
+    print(smear(pop.values,
+                lo = pop.deltas.lo,
+                hi = pop.deltas.hi,
+                value=decs))
+  #for i in pop.values:
+   # print("z",pop.pos(i).x,
+    #      pop.pos(i).y)
   
-def smear1(a,b,c,n):
-  return bound(a + f*(b - c) if r()< cf else a,
-               lo[n], hi[n])
+def smear(all,lo=[],hi=[],f=0.25,cf=0.5,value=same):
+  aa, bb, cc = any(all), any(all), any(all)
+  return o(decs = [smear1(a,b,c,f,cf,lo[n],hi[n])
+                   for n,(a,b,c)
+                   in enumerate(zip(aa.decs,
+                                    bb.decs,
+                                    cc.decs))])
+  
+def smear1(a,b,c,f,cf,lo,hi):
+  return bound(a + f*(b - c) if r()< cf else a, lo, hi)
 
 def bound(x, lo, hi):
-  return (((x - lo) % (hi - lo)) + lo)
+  return lo + ((x - lo) % (hi - lo))
 
+
+exit()
+  
 gale0(ZDT1())
 
 exit()
@@ -240,7 +283,7 @@ model=ZDT1()
 m=0
 seed(12)
 decs = lambda x:x.decs
-grid=Population([model.one() for _ in range(32)],
+grid=Log([model.one() for _ in range(32)],
         value=decs)
 for _ in range(1000):   
     x = model.one()
