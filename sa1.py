@@ -108,12 +108,15 @@ class Deltas:
   def dist1(i,xs,ys,d=0):
     one = i.value(xs)
     two = i.value(ys)
-    for n,(x,y,lo,hi) in enumerate(zip(one,two,
-                                       i.lo,i.hi)):           
-      x  = (x - lo)/(hi - lo + 0.001)
-      y  = (y - lo)/(hi - lo + 0.001)
+    for n,(x,y) in enumerate(zip(one,two)):           
+      x  = i.norm(x,n) 
+      y  = i.norm(y,n) 
       d += (x - y)**2
     return sqrt(d) / sqrt(i.n)
+  def norm(i,x,n):
+    lo = i.lo[n]
+    hi = i.hi[n]
+    return (x- lo)/ (hi - lo + 0.0001)
   def furthest(i,one,all):
     d, out = 0, one
     for two in all:
@@ -218,8 +221,10 @@ def mutate1(old,p,lo,hi):
   return old if p >= r() else old - x + 2 * x * r()
 
 def decs(x): return x.decs
+def objs(x): return x.objs
     
-def mean(log,lst): 
+def mean(obj,lst):
+   XXXXX
   n,score=0,0
   for n,(log,obj) in  zip(log.hi,log.lo,
                                    one.objs):
@@ -228,7 +233,9 @@ def mean(log,lst):
 def sa(model, seed=1,init=10,era=100,kmax=10000, 
        aggr=mean,cooling=1):
   rseed(seed)
-  log = Log([model() for one in xrange(init)],value=decs)
+  inits= [model() for one in xrange(init)]
+  log = Log(inits,value=decs)
+  obj = Log(inits,value=objs)
   sb  = s = model()
   eb  = e = aggr(log,model.eval(s))
   for k in xrange(kmax):
@@ -237,7 +244,7 @@ def sa(model, seed=1,init=10,era=100,kmax=10000,
     sn  = mutate(s,value=decs,
                  lo=log.deltas.lo,
                  hi=log.deltas.hi)
-    en  = aggr(log,model.eval(s))
+    en  = aggr(obj,model.eval(s))
     print(en)
     s,e=sn,en
     continue
