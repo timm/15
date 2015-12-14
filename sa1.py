@@ -3,11 +3,10 @@ import sys
 sys.dont_write_bytecode = True
 import random,math
 
-
 r      = random.random
 any    = random.choice
 within = random.uniform
-seed   = random.seed
+rseed   = random.seed
 sqrt   = math.sqrt
 exp    = math.exp
 
@@ -79,6 +78,8 @@ class ZDT1(Model):
     i.decs = [dec(x) for x in range(ZDT1.n)]
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
+
+# meed hi los on decsions and objectives
 
 class Deltas:
   def __init__(i,one,value=same):
@@ -218,20 +219,32 @@ def mutate1(old,p,lo,hi):
 
 def decs(x): return x.decs
     
-def sa(model, init=10,era=100,kmax=10000, aggr=sum,cooling=1):
+def mean(log,lst): 
+  n,score=0,0
+  for n,(log,obj) in  zip(log.hi,log.lo,
+                                   one.objs):
+    lo,hi = log.
+
+def sa(model, seed=1,init=10,era=100,kmax=10000, 
+       aggr=mean,cooling=1):
+  rseed(seed)
   log = Log([model() for one in xrange(init)],value=decs)
   sb  = s = model()
-  eb  = e = aggr(model.eval(s).objs)
+  eb  = e = aggr(log,model.eval(s))
   for k in xrange(kmax):
     tick="."
     t   = ((k+1)/kmax)**cooling
     sn  = mutate(s,value=decs,
                  lo=log.deltas.lo,
                  hi=log.deltas.hi)
-    en  = aggr(model.eval(s).objs)
+    en  = aggr(log,model.eval(s))
+    print(en)
+    s,e=sn,en
+    continue
     if sn < sb:
       tick="!"
       sb,eb = sb,eb
+    print(r3s([en,e,t,exp((en -e)/t)]))
     if sn < s:
       tick="<"
       s,e = sn,en
