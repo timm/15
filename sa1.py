@@ -223,8 +223,8 @@ def mutate1(old,p,lo,hi):
 def decs(x): return x.decs
 def objs(x): return x.objs
     
-def mean(obj,lst):
-   XXXXX
+def mean(objLog,one):
+  o
   n,score=0,0
   for n,(log,obj) in  zip(log.hi,log.lo,
                                    one.objs):
