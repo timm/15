@@ -12,6 +12,10 @@ exp    = math.exp
 
 def r3(x)    : return round(x,3)
 def r3s(lst) : return map(r3,lst)
+def r4(x)    : return round(x,4)
+def r4s(lst) : return map(r4,lst)
+def r5(x)    : return round(x,5)
+def r5s(lst) : return map(r5,lst)
 
 class o:
   def __init__(i,**d)    : i.__dict__.update(d)
@@ -78,6 +82,7 @@ class ZDT1(Model):
     i.decs = [dec(x) for x in range(ZDT1.n)]
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
+
 
 # meed hi los on decsions and objectives
 
@@ -232,37 +237,39 @@ def normmean(log,lst):
   lst = [log.deltas.norm(x,n) for n,x in enumerate(lst)]
   return sum(lst)/ len(lst)
 
-def sa(model, seed=1,init=10,era=100,kmax=1000, 
+def sa(model, seed=1,init=10,era=1000,kmax=10000, 
        aggr=normmean,cooling=1):
   rseed(seed)
   inits= [model() for one in xrange(init)]
-  log = Log(inits,value=decs)
-  obj = Log(map(model.eval,inits),
+  logDecs = Log(inits,value=decs)
+  logObjs = Log(map(model.eval,inits),
             value=objs)
   sb  = s = model()
-  e0= eb  = e = aggr(obj,model.eval(s).objs)
+  e0= eb  = e = aggr(logObjs,model.eval(s).objs)
+  counts=o(lt=0,stagger=0,better=0)
   for k in xrange(kmax):
-    tick="."
     t   = ((k+1)/kmax)**cooling
     sn  = model.eval(
              mutate(s,
                     value=decs,
-                    lo=log.deltas.lo,
-                    hi=log.deltas.hi))
-    log + sn
-    obj + sn
-    en  = aggr(obj,sn.objs)
-    if en < eb:
-      tick=int(100*e0/en)
-      sb,eb = sn,en
+                    lo=logDecs.deltas.lo,
+                    hi=logDecs.deltas.hi))
+    logDecs + sn
+    logObjs + sn
+    en  = aggr(logObjs,sn.objs)
     if en < e:
-      tick="<"+str(int(en/e0*100))
+      counts.lt += 1
       s,e = sn,en
-    elif exp((en - e)/t) < r():
-      tick="?"
+    elif exp((e - en)/t) < r():
+      counts.stagger += 1
       s,e = sn,en
-    print(tick,end="")
-    if (k % era) == 0: print("\n",int(100*t),eb," ",end="")
+    if en < eb:
+      counts.better += 1
+      sb,eb = sn,en
+    if (k % era) == 0:
+      print("%4d" %k,r4(eb)," ",counts,end="")
+      print("  *" if counts.better > 0 else "")
+      counts=o(lt=0,stagger=0,better=0)
   return e0,eb,sb.objs
 
 rseed(1)
