@@ -243,10 +243,10 @@ def sa(model, seed=1,init=10,era=1000,kmax=10000,
   inits= [model() for one in xrange(init)]
   logDecs = Log(inits,value=decs)
   logObjs = Log(map(model.eval,inits),
-            value=objs)
-  sb  = s = model()
-  e0= eb  = e = aggr(logObjs,model.eval(s).objs)
-  counts=o(lt=0,stagger=0,better=0)
+                value=objs)
+  sb =  s = model()
+  e0 = eb = e = aggr(logObjs,model.eval(s).objs)
+  counts = o(lt=0,stagger=0,better=0)
   for k in xrange(kmax):
     t   = ((k+1)/kmax)**cooling
     sn  = model.eval(
