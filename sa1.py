@@ -86,7 +86,6 @@ class Deltas:
     i.value = value
     i.cache = {}
     lst     = value(one)
-    i.n     = len(lst)
     i.lo    = [0 for _ in lst]
     i.hi    = [0 for _ in lst]
     i.update(one)
@@ -105,14 +104,15 @@ class Deltas:
     else:
       i.cache[k] = d = i.dist1(xs,ys)
       return d
-  def dist1(i,xs,ys,d=0):
+  def dist1(i,xs,ys,d=0,n=0):
     one = i.value(xs)
     two = i.value(ys)
-    for n,(x,y) in enumerate(zip(one,two)):           
+    for n,(x,y) in enumerate(zip(one,two)):
       x  = i.norm(x,n) 
       y  = i.norm(y,n) 
       d += (x - y)**2
-    return sqrt(d) / sqrt(i.n)
+      n += 1
+    return sqrt(d) / sqrt(n)
   def norm(i,x,n):
     lo = i.lo[n]
     hi = i.hi[n]
@@ -143,7 +143,7 @@ class Log:
     i.deltas.update(one)
     i.values += [one]
   def grow(i,east,west):
-    print("-",len(i.values),end="")
+    print("_",end="")
     b4, i.east, i.west = i.values[:], east,west
     i.c = i.deltas.dist(i.east,i.west)
     i.values[:] = []
@@ -218,52 +218,56 @@ def mutate(one,lo=[],hi=[],p=0.33, value=same):
 
 def mutate1(old,p,lo,hi):
   x = (hi - lo)
-  return old if p >= r() else old - x + 2 * x * r()
+  y = old if p >= r() else old - x + 2 * x * r()
+  return bound(y,lo,hi)
+
+def bound(x, lo, hi):
+  return lo + ((x - lo) % (hi - lo))
+
 
 def decs(x): return x.decs
 def objs(x): return x.objs
     
-def mean(objLog,one):
-  o
-  n,score=0,0
-  for n,(log,obj) in  zip(log.hi,log.lo,
-                                   one.objs):
-    lo,hi = log.
+def normmean(log,lst):
+  lst = [log.deltas.norm(x,n) for n,x in enumerate(lst)]
+  return sum(lst)/ len(lst)
 
-def sa(model, seed=1,init=10,era=100,kmax=10000, 
-       aggr=mean,cooling=1):
+def sa(model, seed=1,init=10,era=100,kmax=1000, 
+       aggr=normmean,cooling=1):
   rseed(seed)
   inits= [model() for one in xrange(init)]
   log = Log(inits,value=decs)
-  obj = Log(inits,value=objs)
+  obj = Log(map(model.eval,inits),
+            value=objs)
   sb  = s = model()
-  eb  = e = aggr(log,model.eval(s))
+  e0= eb  = e = aggr(obj,model.eval(s).objs)
   for k in xrange(kmax):
     tick="."
     t   = ((k+1)/kmax)**cooling
-    sn  = mutate(s,value=decs,
-                 lo=log.deltas.lo,
-                 hi=log.deltas.hi)
-    en  = aggr(obj,model.eval(s))
-    print(en)
-    s,e=sn,en
-    continue
-    if sn < sb:
-      tick="!"
-      sb,eb = sb,eb
-    print(r3s([en,e,t,exp((en -e)/t)]))
-    if sn < s:
-      tick="<"
+    sn  = model.eval(
+             mutate(s,
+                    value=decs,
+                    lo=log.deltas.lo,
+                    hi=log.deltas.hi))
+    log + sn
+    obj + sn
+    en  = aggr(obj,sn.objs)
+    if en < eb:
+      tick=int(100*e0/en)
+      sb,eb = sn,en
+    if en < e:
+      tick="<"+str(int(en/e0*100))
       s,e = sn,en
     elif exp((en - e)/t) < r():
       tick="?"
       s,e = sn,en
     print(tick,end="")
-    if (k % era) == 0: print("\n",eb," ",end="")
-  return eb,sb
-      
-e,s=sa(ZDT1())
-print(e)
+    if (k % era) == 0: print("\n",int(100*t),eb," ",end="")
+  return e0,eb,sb.objs
+
+rseed(1)
+e0,e,s=sa(ZDT1())
+print("\n",e0,e,"\n",s)
 
 exit()
 
@@ -290,8 +294,6 @@ def smear(all,lo=[],hi=[],f=0.25,cf=0.5,value=same):
 def smear1(a,b,c,f,cf,lo,hi):
   return bound(a + f*(b - c) if r()< cf else a, lo, hi)
 
-def bound(x, lo, hi):
-  return lo + ((x - lo) % (hi - lo))
 
 
 exit()
