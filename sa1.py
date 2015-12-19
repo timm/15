@@ -51,15 +51,20 @@ An = A = Decision
 class Model:
     def __init__(i):
         i.about()
-    def __call__(i):
-        x      = o(decs=[f() for f in i.decs])
-        x.objs = None
-        return x
+        i.evals = 0
+    def decide(i,retries=20):
+      assert retries>0,'cannot satisfy constraints'
+      x      = o(decs=[f() for f in i.decs])
+      x.objs = None
+      return x if i.ok(x) else i.decide(retries-1) 
     def eval(i,x):
         x.objs = [f(x) for f in i.objs]
+        i.evals += 1
         return x
     def one(i):
         return i.eval(i())
+    def ok(i,x):
+      return True
     def bdom(i,x,y):
         betterOnce = False
         for u,v,meta in zip(x.objs,y.objs,i.objs):
@@ -86,7 +91,7 @@ class ZDT1(Model):
 
 # meed hi los on decsions and objectives
 
-class Deltas:
+class Space:
   def __init__(i,one,value=same):
     i.value = value
     i.cache = {}
@@ -133,32 +138,28 @@ class Deltas:
 class Log:
   "Holds individuals, knows their geometry."
   def __init__(i,inits, value=same,
-               big=0.025,bins=10,deltas=None):
-    i.big, one, i.values,i.value = big,inits[0],[],value
+               big=0.025,bins=10,space=None):
+    i.big, one, i.value,i.values = big,inits[0],value,inits
     i.bins = bins
     i._pos  = {}
-    i.deltas = deltas or Deltas(one,value=value)
+    i.space = space or Space(one,value=value)
     i.cells   = [[[] for _ in range(bins)]
                 for _ in range(bins)]
-    map(i.update,inits)
-    i.east = i.deltas.furthest(one,    i.values)
-    i.west = i.deltas.furthest(i.east, i.values)
+    map(i.space.update,inits)
+    i.east = i.space.furthest(one,    i.values)
+    i.west = i.space.furthest(i.east, i.values)
     i.grow(i.east,i.west)
-  def update(i,one):
-    i.deltas.update(one)
-    i.values += [one]
   def grow(i,east,west):
     print("_",end="")
-    b4, i.east, i.west = i.values[:], east,west
-    i.c = i.deltas.dist(i.east,i.west)
-    i.values[:] = []
+    b4,i.east, i.west = i.values[:],east,west
+    i.c = i.space.dist(i.east,i.west)
     i._pos      = {}
     i.cells     = [[[] for _ in range(i.bins)]
                    for _ in range(i.bins)]
     map(i.__add__,[i.east,i.west]+b4)
   def __add__(i,one):
-    a = i.deltas.dist(i.east,one)
-    b = i.deltas.dist(i.west,one)
+    a = i.space.dist(i.east,one)
+    b = i.space.dist(i.west,one)
     if  a - i.c > i.big:
       i.grow(i.east,one)
       return i + one
@@ -166,13 +167,14 @@ class Log:
       i.grow(one,i.west)
       return i + one
     else:
-      i.update(one)
+      i.space.update(one)
       x = (a**2 + i.c**2 - b**2) / (2*i.c)
       if x > a:
         x = a
       y = sqrt(a**2 - x**2)
       binx, biny = i.bin(x), i.bin(y)
       i.cells[ binx ][ biny ] += [one]
+      i.values += [one]
       i._pos[id(one)] = o(x=x,y=y,binx=binx,
                           biny=biny,a=a,b=b)
       return x,y
@@ -183,7 +185,7 @@ class Log:
     return i._pos[id(x)]
   def clone(i,inits=[]):
     return Log(inits, value=i.value,
-                      big=i.big,bins=i.bins, deltas=i.deltas)
+                      big=i.big,bins=i.bins, space=i.space)
   def best(i,want,most=0.33,cmp=lt):
     print(i.east is want)
     if east is want:
@@ -216,10 +218,18 @@ def graph_it(population, model, scale):
     ax.set_ylabel('f2')
     fig.savefig(file_name)
 
-def mutate(one,lo=[],hi=[],p=0.33, value=same):
-  return o(decs = [mutate1(old,p,lo[n],hi[n])
+def mutate(one,log=None,p=0.33, value=same,evaluate=None,ok=None,retries=20):
+  tmp= o(decs = [mutate1(old,p,log.space.lo[n],log.space.hi[n])
                    for n,old
                    in enumerate(value(one))])
+  if ok:
+    assert retries > 0,'too hard to satisfy constraints'
+    if not ok(tmp):
+      return mutate(one,
+                    log=log,p=p, value=value,
+                    evaluate=evaluate, ok=ok,
+                    retries=retries - 1)
+  return evaluate(tmp) if evaluate else tmp
 
 def mutate1(old,p,lo,hi):
   x = (hi - lo)
@@ -229,52 +239,112 @@ def mutate1(old,p,lo,hi):
 def bound(x, lo, hi):
   return lo + ((x - lo) % (hi - lo))
 
-
 def decs(x): return x.decs
 def objs(x): return x.objs
     
 def normmean(log,lst):
-  lst = [log.deltas.norm(x,n) for n,x in enumerate(lst)]
+  lst = [log.space.norm(x,n) for n,x in enumerate(lst)]
   return sum(lst)/ len(lst)
 
-def sa(model, seed=1,init=10,era=1000,kmax=10000, 
-       aggr=normmean,cooling=1):
-  rseed(seed)
-  inits= [model() for one in xrange(init)]
-  logDecs = Log(inits,value=decs)
-  logObjs = Log(map(model.eval,inits),
-                value=objs)
-  sb =  s = model()
-  e0 = eb = e = aggr(logObjs,model.eval(s).objs)
-  counts = o(lt=0,stagger=0,better=0)
+def saTime(kmax,era,cooling,reports):
+  sb = eb = None
   for k in xrange(kmax):
-    t   = ((k+1)/kmax)**cooling
-    sn  = model.eval(
-             mutate(s,
-                    value=decs,
-                    lo=logDecs.deltas.lo,
-                    hi=logDecs.deltas.hi))
+    now = int(k/era)
+    if not now in reports:
+      if (now - 1) in reports:
+        old = reports[now-1]
+        sb  = old.sb
+        eb  = old.eb
+        print("%4d" %k,r4(old.eb)," ",
+              o(lt=old.lt,stagger=old.stagger,better=old.better),
+              end="")
+        print(("  * %f" % eb) if old.better > 0 else "")
+      reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb,better=0, e=[])
+    t= ((k+1)/kmax)**cooling
+    yield t, reports[now]
+
+def optimize(model,how,seed=1,init=10,**d):
+  rseed(seed)
+  inits   = [model.decide() for one in xrange(init)]
+  logDecs = Log(inits,                 value=decs)
+  logObjs = Log(map(model.eval,inits), value=objs)
+  return how(model,inits,logDecs,logObjs, **d)
+  
+def sa(model,_,
+       logDecs,logObjs,
+       era=50,
+       kmax=1000, 
+       aggr=normmean,
+       cooling=2,retries=20,
+       p=0.1):
+  sb =  s = model.decide()
+  eb = e = aggr(logObjs,model.eval(s).objs)
+  reports = {}
+  for t,report in saTime(kmax,era,cooling,reports):
+    sn  = mutate(s,
+                 p        = p,
+                 ok       = model.ok,
+                 log      = logDecs,
+                 value    = decs,
+                 retries  = 20,
+                 evaluate = model.eval)
     logDecs + sn
     logObjs + sn
     en  = aggr(logObjs,sn.objs)
-    if en < e:
-      counts.lt += 1
-      s,e = sn,en
-    elif exp((e - en)/t) < r():
-      counts.stagger += 1
-      s,e = sn,en
     if en < eb:
-      counts.better += 1
-      sb,eb = sn,en
-    if (k % era) == 0:
-      print("%4d" %k,r4(eb)," ",counts,end="")
-      print("  *" if counts.better > 0 else "")
-      counts=o(lt=0,stagger=0,better=0)
-  return e0,eb,sb.objs
+      eb = en
+      report.better += 1
+      report.sb = sn
+      report.eb = en
+    if en < e:
+      s,e = sn,en
+      report.lt += 1
+    elif exp((e - en)/t) < r():
+      s,e = sn,en
+      report.stagger += 1
+    report.e += [e]
+  return report,reports
+
+def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cf=0.3,f=0.25):
+  for r in xrange(repeats):
+    nextgen=[]
+    for n,parent in enumerate(frontier):
+      print(r,n,len(frontier))
+      child = smear(frontier,log=logDecs,f=f,cf=cf,evaluate=model.eval)
+      logDecs + child
+      logObjs + child
+      nextgen += [child if model.bdom(child,parent) else parent]
+      #elif not model.bdom(parent,child):
+       # frontier.append(child)
+    frontier = nextgen
+  return frontier
+
+def smear(all,log=None,f=0.25,cf=0.5,ok=None,retries=20,evaluate=None):
+  aa, bb, cc = any(all), any(all), any(all)
+  tmp= o(decs = [smear1(a,b,c,f,cf,log.space.lo[n],log.space.hi[n])
+                   for n,(a,b,c)
+                   in enumerate(zip(aa.decs,
+                                    bb.decs,
+                                    cc.decs))])
+  if ok:
+    print(retries)
+    assert retries>0,'too hard to satisfy constraints'
+    if not ok(tmp):
+      return smear(all,log=log,f=f,cf=cf,ok=ok,
+                   retries=retries-1,
+                   evaluate=evaluate)
+  return evaluate(tmp) if evaluate else tmp
+
+def smear1(a,b,c,f,cf,lo,hi):
+  return bound(a + f*(b - c) if r()< cf else a, lo, hi)
+
 
 rseed(1)
-e0,e,s=sa(ZDT1())
-print("\n",e0,e,"\n",s)
+last,all= optimize(ZDT1(),sa,init=100)
+print("\n",last.eb,all[0].eb,"\n",all[0].e[0],last.sb.objs)
+
+rseed(1)
+optimize(ZDT1(),de,init=10)
 
 exit()
 
@@ -283,24 +353,13 @@ def gale0(model,repeats=100):
                     value=decs)
   for _ in range(10):
     print(smear(pop.values,
-                lo = pop.deltas.lo,
-                hi = pop.deltas.hi,
+                lo = pop.space.lo,
+                hi = pop.space.hi,
                 value=decs))
   #for i in pop.values:
    # print("z",pop.pos(i).x,
     #      pop.pos(i).y)
   
-def smear(all,lo=[],hi=[],f=0.25,cf=0.5,value=same):
-  aa, bb, cc = any(all), any(all), any(all)
-  return o(decs = [smear1(a,b,c,f,cf,lo[n],hi[n])
-                   for n,(a,b,c)
-                   in enumerate(zip(aa.decs,
-                                    bb.decs,
-                                    cc.decs))])
-  
-def smear1(a,b,c,f,cf,lo,hi):
-  return bound(a + f*(b - c) if r()< cf else a, lo, hi)
-
 
 
 exit()
@@ -326,11 +385,11 @@ want = 1 - want if model.bdom(grid.west,grid.east) else want
 grid1 = grid.half(easterly)
 
 print("")
-print(r3s(grid.deltas.lo))
-print(r3s(grid1.deltas.lo))
+print(r3s(grid.space.lo))
+print(r3s(grid1.space.lo))
 
-print(r3s(grid.deltas.hi))
-print(r3s(grid1.deltas.hi))
+print(r3s(grid.space.hi))
+print(r3s(grid1.space.hi))
 
 print("grdi1",m,len(grid.values))
 print(grid.bounds())
