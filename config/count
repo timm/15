@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+for i in *.csv; do
+	echo -n "$i "
+	cat $i |
+        awk -F, '
+    		{total += $NF; all[++n] = $NF} 
+	     END {
+	 asort(all)
+         p = int(n/4)
+         printf("days: %12f 25: %12f   50:  %12f  75: %12f\n",total/3600/24, all[p],all[p*2], all[p*3])}
+       ' 
+done
