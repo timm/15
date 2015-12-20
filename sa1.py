@@ -92,6 +92,15 @@ class Num:
   def norm(i,z):
     return (z - i.lo) / (i.hi - i.lo + 10e-32)
 
+class Nums:
+  def __init__(i,parts):
+    i.parts=parts
+    i.nums=[Num() for _ in parts]
+  def __add__(i,x):
+    for x,num in zip(i.parts(x),i.nums):
+      num + x
+      
+
 class ZDT1(Model):
   n=30
   def about(i):
