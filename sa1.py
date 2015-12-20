@@ -139,7 +139,7 @@ class Log:
   "Holds individuals, knows their geometry."
   def __init__(i,inits, value=same,
                big=0.025,bins=10,space=None):
-    i.big, one, i.value,i.values = big,inits[0],value,inits
+    i.big, one, i.value,i.values = big,inits[0],value,inits[:]
     i.bins = bins
     i._pos  = {}
     i.space = space or Space(one,value=value)
@@ -306,17 +306,22 @@ def sa(model,_,
   return report,reports
 
 def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cf=0.3,f=0.25):
+  
   for r in xrange(repeats):
     nextgen=[]
     for n,parent in enumerate(frontier):
-      print(r,n,len(frontier))
+      print("1",r,n,len(frontier))
       child = smear(frontier,log=logDecs,f=f,cf=cf,evaluate=model.eval)
+      print("2",len(frontier))
       logDecs + child
+      print("3",len(frontier))
       logObjs + child
+      print("3",len(frontier))
       nextgen += [child if model.bdom(child,parent) else parent]
+      print("4",len(frontier))
       #elif not model.bdom(parent,child):
        # frontier.append(child)
-    frontier = nextgen
+    frontier = nextgen[:]
   return frontier
 
 def smear(all,log=None,f=0.25,cf=0.5,ok=None,retries=20,evaluate=None):
