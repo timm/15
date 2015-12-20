@@ -79,7 +79,7 @@ class Num:
     i.hi = i.lo = None
     i.mu = i.sd = i.m2 = 0  
     i.n = 0 
-    i.__add__(inits)
+    map(i.__add__,inits)
   def __add__(i,x):
     i.n  += 1
     i.lo  = min(z,i.lo)
