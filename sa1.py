@@ -344,12 +344,12 @@ def smear1(a,b,c,f,cf,lo,hi):
   return bound(a + f*(b - c) if r()< cf else a, lo, hi)
 
 
-rseed(1)
-last,all= optimize(ZDT1(),sa,init=100)
-print("\n",last.eb,all[0].eb,"\n",all[0].e[0],last.sb.objs)
+#rseed(1)
+#last,all= optimize(ZDT1(),sa,init=100)
+#print("\n",last.eb,all[0].eb,"\n",all[0].e[0],last.sb.objs)
 
 rseed(1)
-optimize(ZDT1(),de,init=10)
+optimize(ZDT1(),de,init=100)
 
 exit()
 
