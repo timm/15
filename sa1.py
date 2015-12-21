@@ -67,13 +67,13 @@ class Model:
     def ok(i,x):
       return True
     def bdom(i,x,y):
-        betterOnce = False
+        betters = 0
         for u,v,meta in zip(x.objs,y.objs,i.objs):
             if meta.better(u,v):
-                betterOnce=True
+                betters += 1
             elif u != v:
-                return False
-        return betterOnce
+                return False,0
+        return betters > 0, betters
 
 class Some:
   def __init__(i, init=[], max=256):
@@ -178,16 +178,21 @@ class Space:
       n += 1
     return sqrt(d) / sqrt(n)
   def norm(i,x,n):
+    if x > i.hi[n]: i.hi[n] = x
+    if x < i.lo[n]: i.lo[n] = x
     lo = i.lo[n]
     hi = i.hi[n]
     return (x- lo)/ (hi - lo + 0.0001)
-  def furthest(i,one,all):
-    d, out = 0, one
+  def furthest(i,one,all,better=gt,most=0):
+    d, out = most, one
     for two in all:
-      tmp = i.dist(one,two)
-      if tmp > d:
-        d,out = tmp,two
-    return out
+      if id(two) != id(one):
+        tmp = i.dist(one,two)
+        if better(tmp,d):
+          d,out = tmp,two
+    return out,d
+  def closest(i,one,all):
+    return i.furthest(one,all,better=lt,most=10**32)
 
 class Log:
   "Holds individuals, knows their geometry."
@@ -200,8 +205,8 @@ class Log:
     i.cells   = [[[] for _ in range(bins)]
                 for _ in range(bins)]
     map(i.space.update,inits)
-    i.east = i.space.furthest(one,    i.values)
-    i.west = i.space.furthest(i.east, i.values)
+    i.east,_ = i.space.furthest(one,    i.values)
+    i.west,_ = i.space.furthest(i.east, i.values)
     i.grow(i.east,i.west)
   def grow(i,east,west):
     print("_",end="")
@@ -388,9 +393,9 @@ def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
                     cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
-      if model.bdom(child,parent):
+      if model.bdom(child,parent)[0]:
         frontier[n] = child
-      #elif not model.bdom(parent,child):
+      #elif not betters2:
        # frontier.append(child)
   return frontier
 
@@ -400,7 +405,7 @@ def bdoms(model,frontier,*_):
     x.alive = True
   for x in frontier:
     for y in frontier:
-      if model.bdom(x,y):
+      if model.bdom(x,y)[0]:
         y.alive = False
   return [f for f in frontier if f.alive]
 
@@ -424,15 +429,40 @@ def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 
-def igd(models=[ZDT1],hows=[sa,de,bdoms], seed=1,init=300):
-  pop0=None
-  pops = []
+def igd(models=[ZDT1],hows=[sa,de,bdoms], repeats=20, seed0=1,init=300):
   for model in models:
+    rseed(seed0)
     for how in hows:
-      rseed(seed)
-      pop1,pop = optimize(model(),how,init=init)
-      pop0 = pop0 or pop
-      pops += pop
+      name = how.__name__
+      for seed1 in [r() for _ in xrange(repeats)]:
+        every    = []
+        lasts    = {how.__name__:[] for how in hows}
+        rseed(seed1)
+        first,_ = optimize(model(),how,init=init)
+        every += first
+     
+        rseed(seed1)
+        _,last = optimize(model(),how,init=init)
+        every += last
+        lasts[name] += last
+        pops += pop1
+      best = bdoms(model(), every,1)
+      log = Log(every, value=decs)
+      print("")
+      baseline = Num()
+      for one in pop0:
+        _,d = log.space.closest(one,best)
+      baseline + d
+    for how in hows:
+      name = how.__name__
+      this = Num()
+      for one in pop[name]:
+        _,d = log.space.closest(one,best)
+        this + d
+      print([100 - int(100*(a - z)/(a+0.0001)) for  z,a in
+            zip(this.also().range[1:4],
+                baseline.also().range[1:4])],
+            name)
 
 igd()
 exit()
