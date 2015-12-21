@@ -301,29 +301,44 @@ def normmean(log,lst):
   lst = [log.space.norm(x,n) for n,x in enumerate(lst)]
   return sum(lst)/ len(lst)
 
-def saTime(kmax,era,cooling,reports):
-  sb = eb = None
+def saControl(kmax,era,cooling):
+  def newEra():
+    return not now in reports
+  def startNewEra(sb,eb):
+    reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb,better=0, e=[])
+  def oldEra():
+    return (now - 1) in reports
+  def finishOldEra():
+    old = reports[now-1]
+    sb  = old.sb
+    eb  = old.eb
+    #print("%4d" %k,r4(old.eb)," ",
+     #     o(lt=old.lt,stagger=old.stagger,better=old.better),
+      #    end="")
+    #print(("  * %s" % sb.objs) if old.better > 0 else "")
+    return sb,eb
+  #--------------------------------
+  sb, eb, reports = None, None, {}
   for k in xrange(kmax):
     now = int(k/era)
-    if not now in reports:
-      if (now - 1) in reports:
-        old = reports[now-1]
-        sb  = old.sb
-        eb  = old.eb
-        print("%4d" %k,r4(old.eb)," ",
-              o(lt=old.lt,stagger=old.stagger,better=old.better),
-              end="")
-        print(("  * %s" % sb.objs) if old.better > 0 else "")
-      reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb,better=0, e=[])
-    t= ((k+1)/kmax)**cooling
-    yield t, reports[now]
+    if newEra():
+      if oldEra():
+        sb,eb = finishOldEra()
+      startNewEra(sb,eb)
+    t = ((k+1)/kmax)**cooling
+    yield t, reports[now],reports
 
 def optimize(model,how,seed=1,init=10,**d):
   rseed(seed)
-  inits   = [model.decide() for one in xrange(init)]
-  logDecs = Log(inits,                 value=decs)
-  logObjs = Log(map(model.eval,inits), value=objs)
-  return how(model,inits,logDecs,logObjs, **d)
+  print("\n---|",how.__name__,"|-------------------------")
+  pop0   = [model.eval(model.decide())
+             for one in xrange(init)]
+  logDecs = Log(pop0, value=decs)
+  logObjs = Log(pop0, value=objs)
+  someNums(pop0,logObjs,model)
+  pop = how(model,pop0,logDecs,logObjs, **d)
+  someNums(pop,logObjs,model)
+  return pop0,pop
   
 def sa(model,_,
        logDecs,logObjs,
@@ -332,46 +347,41 @@ def sa(model,_,
        aggr=normmean,
        cooling=2,retries=20,
        p=0.1):
-  sb =  s = model.decide()
+  sb = s = model.decide()
   eb = e = aggr(logObjs,model.eval(s).objs)
-  reports = {}
-  for t,report in saTime(kmax,era,cooling,reports):
-    sn  = mutate(s,
-                 p        = p,
-                 ok       = model.ok,
-                 log      = logDecs,
-                 value    = decs,
-                 retries  = 20,
-                 evaluate = model.eval)
+  for t,now,history in saControl(kmax,era,cooling):
+    sn  = mutate(s, p        = p,
+                    ok       = model.ok,
+                    log      = logDecs,
+                    value    = decs,
+                    retries  = 20,
+                    evaluate = model.eval)
     logDecs + sn
     logObjs + sn
     en  = aggr(logObjs,sn.objs)
     if en < eb:
       eb = en
-      report.better += 1
-      report.sb = sn
-      report.eb = en
+      now.better += 1
+      now.sb, now.eb = sn,en
     if en < e:
       s,e = sn,en
-      report.lt += 1
+      now.lt += 1
     elif exp((e - en)/t) < r():
       s,e = sn,en
-      report.stagger += 1
-    report.e += [e]
-  return report,reports
+      now.stagger += 1
+    now.e += [e]
+  return [sb]
 
 
+def someNums(inits,logObjs,model):
+  nums= Nums(len(model.objs)+1,
+              lambda x: x.objs+[normmean(logObjs,x.objs)],
+              inits)
+  print(model.__class__.__name__,
+        map(lambda x:x.also().range, nums.nums))
   
-
 def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
-  def someNums(inits):
-    return Nums(len(model.objs),
-                lambda x: x.objs,
-                inits)
-  print(map(lambda x:x.also().range,
-            someNums(frontier).nums))
   for r in xrange(repeats):
-    print(r,len(frontier)," ",end="")
     for n in xrange(len(frontier)):
       parent = frontier[n]
       child = smear(frontier,log=logDecs,f=f,
@@ -382,28 +392,17 @@ def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
         frontier[n] = child
       #elif not model.bdom(parent,child):
        # frontier.append(child)
-    print(map(lambda x:x.also().range,
-            someNums(frontier).nums))
   return frontier
 
 
-def guess(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
-  def someNums(inits):
-    return Nums(len(model.objs),
-                lambda x: x.objs,
-                inits)
-  print(map(lambda x:x.also().range,
-            someNums(frontier).nums))
+def bdoms(model,frontier,*_):
   for x in frontier:
     x.alive = True
   for x in frontier:
     for y in frontier:
       if model.bdom(x,y):
         y.alive = False
-  frontier = [f for f in frontier if f.alive]
-  print(map(lambda x:x.also().range,
-            someNums(frontier).nums))
-  return frontier
+  return [f for f in frontier if f.alive]
 
 def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
   aa, bb, cc = any(all), any(all), any(all)
@@ -425,17 +424,17 @@ def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 
-rseed(1)
-last,all= optimize(ZDT1(),sa,init=100)
-#print("\n",last.eb,all[0].eb,"\n",all[0].e[0],last.sb.objs)
+def igd(models=[ZDT1],hows=[sa,de,bdoms], seed=1,init=300):
+  pop0=None
+  pops = []
+  for model in models:
+    for how in hows:
+      rseed(seed)
+      pop1,pop = optimize(model(),how,init=init)
+      pop0 = pop0 or pop
+      pops += pop
 
-rseed(1)
-optimize(ZDT1(),de,init=300)
-
-print("")
-rseed(1)
-optimize(ZDT1(),guess,init=300)
-
+igd()
 exit()
 
 def gale0(model,repeats=100):
