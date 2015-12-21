@@ -74,6 +74,33 @@ class Model:
                 return False
         return betterOnce
 
+class Num:
+  def __init__(i,inits=[]):
+    i.hi = i.lo = None
+    i.mu = i.sd = i.m2 = 0  
+    i.n = 0 
+    map(i.__add__,inits)
+  def __add__(i,x):
+    i.n  += 1
+    i.lo  = min(z,i.lo)
+    i.hi  = max(z,i.hi)
+    delta = z - i.mu;
+    i.mu += delta/i.n
+    i.m2 += delta*(z - i.mu)
+    if i.n > 1:
+      i.sd = (i.m2/(i.n - 1))**0.5
+  def norm(i,z):
+    return (z - i.lo) / (i.hi - i.lo + 10e-32)
+
+class Nums:
+  def __init__(i,parts):
+    i.parts=parts
+    i.nums=[Num() for _ in parts]
+  def __add__(i,x):
+    for x,num in zip(i.parts(x),i.nums):
+      num + x
+      
+
 class ZDT1(Model):
   n=30
   def about(i):
@@ -304,24 +331,20 @@ def sa(model,_,
       report.stagger += 1
     report.e += [e]
   return report,reports
-
-def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cf=0.3,f=0.25):
   
+def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cf=0.3,f=0.25):
   for r in xrange(repeats):
     nextgen=[]
-    for n,parent in enumerate(frontier):
-      print("1",r,n,len(frontier))
+    print(r,len(frontier))
+    for n,parent in enumerate(frontier):   
       child = smear(frontier,log=logDecs,f=f,cf=cf,evaluate=model.eval)
-      print("2",len(frontier))
       logDecs + child
-      print("3",len(frontier))
       logObjs + child
-      print("3",len(frontier))
       nextgen += [child if model.bdom(child,parent) else parent]
-      print("4",len(frontier))
       #elif not model.bdom(parent,child):
        # frontier.append(child)
-    frontier = nextgen[:]
+    frontier = nextgen
+  print("\n",model.evals)
   return frontier
 
 def smear(all,log=None,f=0.25,cf=0.5,ok=None,retries=20,evaluate=None):
