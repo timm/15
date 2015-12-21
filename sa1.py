@@ -54,13 +54,14 @@ class Model:
         i.evals = 0
     def decide(i,retries=20):
       assert retries>0,'cannot satisfy constraints'
-      x      = o(decs=[f() for f in i.decs])
+      x      = o(objs=None,decs=[f() for f in i.decs])
       x.objs = None
       return x if i.ok(x) else i.decide(retries-1) 
     def eval(i,x):
+      if not x.objs:
         x.objs = [f(x) for f in i.objs]
         i.evals += 1
-        return x
+      return x
     def one(i):
         return i.eval(i())
     def ok(i,x):
@@ -74,14 +75,30 @@ class Model:
                 return False
         return betterOnce
 
+class Some:
+  def __init__(i, init=[], max=256):
+    i.n, i.all, i.max = 0,[],max
+    map(i.__add__,init)
+  def __add__(i,x):
+    i.n += 1
+    now = len(i.all)
+    if now < i.max:
+      i.all += [x]
+    elif r() <= now/i.n:
+      i.all[ int(r() * now) ]= x
+
 class Num:
   def __init__(i,inits=[]):
     i.hi = i.lo = None
     i.mu = i.sd = i.m2 = 0  
-    i.n = 0 
+    i.n = 0
+    i.some = Some()
+    i._also= None
     map(i.__add__,inits)
-  def __add__(i,x):
+  def __add__(i,z):
+    i._also = None
     i.n  += 1
+    i.some + z
     i.lo  = min(z,i.lo)
     i.hi  = max(z,i.hi)
     delta = z - i.mu;
@@ -91,15 +108,25 @@ class Num:
       i.sd = (i.m2/(i.n - 1))**0.5
   def norm(i,z):
     return (z - i.lo) / (i.hi - i.lo + 10e-32)
-
+  def also(i):
+    if not i._also:
+      lst = sorted(i.some.all)
+      q   = int(len(lst)/4)
+      i._also = o(some=lst,
+                  median=lst[2*q],
+                  q1 = lst[q],
+                  q3 = lst[3*q],
+                  range=r3s([lst[0],lst[q],lst[2*q],lst[3*q],lst[-1]]))
+    return i._also
+  
 class Nums:
-  def __init__(i,parts):
+  def __init__(i,n,parts,inits=[]):
     i.parts=parts
-    i.nums=[Num() for _ in parts]
+    i.nums=[Num() for _ in xrange(n)]
+    map(i.__add__,inits)
   def __add__(i,x):
     for x,num in zip(i.parts(x),i.nums):
       num + x
-      
 
 class ZDT1(Model):
   n=30
@@ -246,7 +273,8 @@ def graph_it(population, model, scale):
     fig.savefig(file_name)
 
 def mutate(one,log=None,p=0.33, value=same,evaluate=None,ok=None,retries=20):
-  tmp= o(decs = [mutate1(old,p,log.space.lo[n],log.space.hi[n])
+  tmp= o(objs=None,
+         decs = [mutate1(old,p,log.space.lo[n],log.space.hi[n])
                    for n,old
                    in enumerate(value(one))])
   if ok:
@@ -285,7 +313,7 @@ def saTime(kmax,era,cooling,reports):
         print("%4d" %k,r4(old.eb)," ",
               o(lt=old.lt,stagger=old.stagger,better=old.better),
               end="")
-        print(("  * %f" % eb) if old.better > 0 else "")
+        print(("  * %s" % sb.objs) if old.better > 0 else "")
       reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb,better=0, e=[])
     t= ((k+1)/kmax)**cooling
     yield t, reports[now]
@@ -331,31 +359,61 @@ def sa(model,_,
       report.stagger += 1
     report.e += [e]
   return report,reports
+
+
   
-def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cf=0.3,f=0.25):
+
+def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
+  def someNums(inits):
+    return Nums(len(model.objs),
+                lambda x: x.objs,
+                inits)
+  print(map(lambda x:x.also().range,
+            someNums(frontier).nums))
   for r in xrange(repeats):
-    nextgen=[]
-    print(r,len(frontier))
-    for n,parent in enumerate(frontier):   
-      child = smear(frontier,log=logDecs,f=f,cf=cf,evaluate=model.eval)
+    print(r,len(frontier)," ",end="")
+    for n in xrange(len(frontier)):
+      parent = frontier[n]
+      child = smear(frontier,log=logDecs,f=f,
+                    cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
-      nextgen += [child if model.bdom(child,parent) else parent]
+      if model.bdom(child,parent):
+        frontier[n] = child
       #elif not model.bdom(parent,child):
        # frontier.append(child)
-    frontier = nextgen
-  print("\n",model.evals)
+    print(map(lambda x:x.also().range,
+            someNums(frontier).nums))
   return frontier
 
-def smear(all,log=None,f=0.25,cf=0.5,ok=None,retries=20,evaluate=None):
+
+def guess(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
+  def someNums(inits):
+    return Nums(len(model.objs),
+                lambda x: x.objs,
+                inits)
+  print(map(lambda x:x.also().range,
+            someNums(frontier).nums))
+  for x in frontier:
+    x.alive = True
+  for x in frontier:
+    for y in frontier:
+      if model.bdom(x,y):
+        y.alive = False
+  frontier = [f for f in frontier if f.alive]
+  print(map(lambda x:x.also().range,
+            someNums(frontier).nums))
+  return frontier
+
+def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
   aa, bb, cc = any(all), any(all), any(all)
-  tmp= o(decs = [smear1(a,b,c,f,cf,log.space.lo[n],log.space.hi[n])
+  tmp= o(objs=None,
+         decs = [smear1(a,b,c,f,cr,log.space.lo[n],log.space.hi[n])
                    for n,(a,b,c)
                    in enumerate(zip(aa.decs,
                                     bb.decs,
                                     cc.decs))])
   if ok:
-    print(retries)
     assert retries>0,'too hard to satisfy constraints'
     if not ok(tmp):
       return smear(all,log=log,f=f,cf=cf,ok=ok,
@@ -363,16 +421,20 @@ def smear(all,log=None,f=0.25,cf=0.5,ok=None,retries=20,evaluate=None):
                    evaluate=evaluate)
   return evaluate(tmp) if evaluate else tmp
 
-def smear1(a,b,c,f,cf,lo,hi):
-  return bound(a + f*(b - c) if r()< cf else a, lo, hi)
+def smear1(a,b,c,f,cr,lo,hi):
+  return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 
-#rseed(1)
-#last,all= optimize(ZDT1(),sa,init=100)
+rseed(1)
+last,all= optimize(ZDT1(),sa,init=100)
 #print("\n",last.eb,all[0].eb,"\n",all[0].e[0],last.sb.objs)
 
 rseed(1)
-optimize(ZDT1(),de,init=100)
+optimize(ZDT1(),de,init=300)
+
+print("")
+rseed(1)
+optimize(ZDT1(),guess,init=300)
 
 exit()
 
