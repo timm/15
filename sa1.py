@@ -67,13 +67,13 @@ class Model:
     def ok(i,x):
       return True
     def bdom(i,x,y):
-        betters = 0
+        betters = False
         for u,v,meta in zip(x.objs,y.objs,i.objs):
             if meta.better(u,v):
-                betters += 1
+                betters =True
             elif u != v:
-                return False,0
-        return betters > 0, betters
+                return False
+        return betters
 
 class Some:
   def __init__(i, init=[], max=256):
@@ -228,7 +228,7 @@ class Log:
     else:
       i.space.update(one)
       x = (a**2 + i.c**2 - b**2) / (2*i.c)
-      if x > a:
+      if x**2 > a**2:
         x = a
       y = sqrt(a**2 - x**2)
       binx, biny = i.bin(x), i.bin(y)
@@ -333,16 +333,18 @@ def saControl(kmax,era,cooling):
     t = ((k+1)/kmax)**cooling
     yield t, reports[now],reports
 
+def doNothing(model,pop,*l,**d):
+  return pop
+  
 def optimize(model,how,seed=1,init=10,**d):
   rseed(seed)
-  print("\n---|",how.__name__,"|-------------------------")
   pop0   = [model.eval(model.decide())
              for one in xrange(init)]
   logDecs = Log(pop0, value=decs)
   logObjs = Log(pop0, value=objs)
-  someNums(pop0,logObjs,model)
+  #someNums(pop0,logObjs,model)
   pop = how(model,pop0,logDecs,logObjs, **d)
-  someNums(pop,logObjs,model)
+  #someNums(pop,logObjs,model)
   return pop0,pop
   
 def sa(model,_,
@@ -351,7 +353,8 @@ def sa(model,_,
        kmax=1000, 
        aggr=normmean,
        cooling=2,retries=20,
-       p=0.1):
+       p=0.1,
+       **d):
   sb = s = model.decide()
   eb = e = aggr(logObjs,model.eval(s).objs)
   for t,now,history in saControl(kmax,era,cooling):
@@ -393,19 +396,19 @@ def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
                     cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
-      if model.bdom(child,parent)[0]:
+      if model.bdom(child,parent):
         frontier[n] = child
       #elif not betters2:
        # frontier.append(child)
   return frontier
 
 
-def bdoms(model,frontier,*_):
+def bdoms(model,frontier,*_,**d):
   for x in frontier:
     x.alive = True
   for x in frontier:
     for y in frontier:
-      if model.bdom(x,y)[0]:
+      if model.bdom(x,y):
         y.alive = False
   return [f for f in frontier if f.alive]
 
@@ -429,41 +432,38 @@ def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 
-def igd(models=[ZDT1],hows=[sa,de,bdoms], repeats=20, seed0=1,init=300):
+def igd(models=[ZDT1],hows=[sa,de,bdoms],
+        repeats=10, seed0=1,init=300): 
+  hows = [(how,how.__name__,[]) for how in hows]
   for model in models:
     rseed(seed0)
-    for how in hows:
-      name = how.__name__
-      for seed1 in [r() for _ in xrange(repeats)]:
-        every    = []
-        lasts    = {how.__name__:[] for how in hows}
-        rseed(seed1)
-        first,_ = optimize(model(),how,init=init)
-        every += first
-     
-        rseed(seed1)
-        _,last = optimize(model(),how,init=init)
-        every += last
-        lasts[name] += last
-        pops += pop1
-      best = bdoms(model(), every,1)
-      log = Log(every, value=decs)
-      print("")
-      baseline = Num()
-      for one in pop0:
-        _,d = log.space.closest(one,best)
-      baseline + d
-    for how in hows:
-      name = how.__name__
-      this = Num()
-      for one in pop[name]:
-        _,d = log.space.closest(one,best)
-        this + d
-      print([100 - int(100*(a - z)/(a+0.0001)) for  z,a in
-            zip(this.also().range[1:4],
-                baseline.also().range[1:4])],
-            name)
+    every = []
+    best  = []
+    first = {}
+    for n in xrange(repeats):
+      seed1 = int(1000000*r())
+      for how,name,last in hows:
+        #print(model.__name__,name,n)
+        first[name],tmp = optimize(model(),
+                                   how,seed=seed1,init=init,repeats=repeats)
+        last.extend(tmp)
+        every.extend(tmp)
+        best = bdoms(model(),best + tmp ,1)
+      every.extend(first[name])
+    space = Log(every, value = objs).space
+    for how,name,last in hows:
+       print(len(last),
+             [better(a,z) for a,z in
+              zip(ranges(space,best,first[name]),
+                  ranges(space,best,last))],
+             name) 
+       
+def ranges(space,best,what):
+  return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
 
+def better(a,z):
+  return z/(a+0.0001) #int(100*(1 - ((a - z)/(a+0.00001))))
+       
 igd()
 exit()
 
