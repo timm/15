@@ -72,7 +72,7 @@ class Model:
         return i.eval(i())
     def ok(i,x):
       return True
-    def bdom(i,x,y):
+    def bdom(i,x,y,_=None):
         betters = False
         for u,v,meta in zip(x.objs,y.objs,i.objs):
             if meta.better(u,v):
@@ -80,7 +80,24 @@ class Model:
             elif u != v:
                 return False
         return betters
+    def cdom(i,x, y,space):
+      def w(better):
+        return -1 if better == lt else 1
+      def expLoss(better,x,y,n):
+        return -1*ee**( w(better)*(x - y) / n )
+      def loss(s,x, y):
+        x,y    = x.objs, y.objs
+        x      = [space.norm(x1,m) for m,x1 in enumerate(x)]
+        y      = [space.norm(y1,m) for m,y1 in enumerate(y)]
+        n      = min(len(x), len(y)) #lengths should be equal
+        losses = [ expLoss(meta.better,xi,yi,n)
+                   for xi, yi,meta
+                   in zip(x,y,i.objs) ]
+        return sum(losses) / n
+      return x if loss("x<y",x,y) < loss("y>x",y,x) else y
+ 
 
+      
 class Some:
   def __init__(i, init=[], max=256):
     i.n, i.all, i.max = 0,[],max
@@ -228,6 +245,8 @@ class Space:
       n += 1
     return sqrt(d) / sqrt(n)
   def norm(i,x,n):
+    if x < i.lo[n]: i.lo[n] = x
+    if x > i.hi[n]: i.hi[n] = x
     lo = i.lo[n]
     hi = i.hi[n]
     return (x- lo)/ (hi - lo + 0.0001)
@@ -412,11 +431,12 @@ def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   #check1(">",pop0)
   logDecs = Log(pop0, value=decs)
   logObjs = Log(pop0, value=objs)
-  pop = how(model,pop0,logDecs,logObjs, verbose=verbose,**d)
+  pop = how(model,pop0[:],logDecs,logObjs, verbose=verbose,**d)
   #check1("<",pop)
   return pop0,pop
 
 def check(s,(a,z)):
+  return 1
   print("")
   a = sorted(a[:],key=objs)
   z = sorted(z[:],key=objs)
@@ -429,6 +449,7 @@ def check(s,(a,z)):
       print(s,i,"b4",a[i].objs,"now",z[i].objs)
 
 def check1(s,a):
+  return 1
   a = sorted(a[:],key=objs)
   l = len(a)
   mid = l // 2
@@ -507,7 +528,6 @@ def dump(all,f,mode="w"):
   where.close()
   
 def de(model,frontier,logDecs,logObjs,era=50,repeats=10,verbose=False,cr=0.3,f=0.75):
-  frontier = frontier[:]
   zero = frontier[:]
   for r in xrange(repeats):
     for n,parent in enumerate(frontier):
@@ -515,7 +535,7 @@ def de(model,frontier,logDecs,logObjs,era=50,repeats=10,verbose=False,cr=0.3,f=0
                     cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
-      if model.bdom(child,parent):
+      if model.bdom(child,parent,logObjs.space):
           frontier[n] = child
     check(r,(zero,frontier))
   return frontier
@@ -548,14 +568,13 @@ def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
 def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
-
+# freeze distance to be min max on whole space
 def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
-        repeats=20, seed0=1,init=300):
+        repeats=10, seed0=1,init=300):
   class metas:
     def __init__(i,how):
       i.how  = how
       i.name = how.__name__
-      i.first = []
       i.last  = {}
   hows = [metas(how) for how in hows]
   for model in models:
@@ -563,6 +582,7 @@ def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
     rseed(seed0)
     every = []
     best  = []
+    first = []
     for n in xrange(repeats):
       say("|")
       seed1 = r()
@@ -571,17 +591,20 @@ def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
         a,z = optimize(model(),how,seed=seed1,
                        init=init,repeats=repeats)
         every.extend(a+z)
-        meta.first  = a
         meta.last[seed1]  = z
-        best = bdoms(model(),best + z ,1)
-    say("!")
+        print("")
+        print(len(first))
+        first = bdoms(model(),first+a,1)
+        print(len(first))
+        best  = bdoms(model(),best+z ,1)
+    say("!")    
     space = Space(every[0],value=objs)
     space.updates(every)
     say("\n")
     for meta in hows:
        num = Num()
        for last in meta.last.values():
-         for a,z in zip(meta.first,last):
+         for a,z in zip(first,last):
            _,d1 = space.closest(a,best)
            _,d2 = space.closest(z,best)
            num + better(d1,d2)
@@ -591,13 +614,13 @@ def ranges(space,best,what):
   return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
 
 def better(a,z):
-  return z
-  #return 100 - int(100*abs((a - z))/(a + 0.000001)) #/(a+0.0001) #int(100*(1 - ((a - z)/(a+0.00001))))
+  return a/(z + 0.000000001)
+#return 100 - int(100*abs((a - z))/(a + 0.000001)) #/(a+0.0001) #int(100*(1 - ((a - z)/(a+0.00001))))
        
 #igd()
 #print(10*len(Fonseca().decs))
-#check("done",optimize(ZDT1(),de,init=300,repeats=10,verbose=True))
-igd()
+#optimize(ZDT1(),de,init=300,repeats=1,verbose=True)
+igd(models=[ZDT1,Fonseca],hows=[de])
 exit()
 
 def gale0(model,repeats=100):
