@@ -9,6 +9,8 @@ within = random.uniform
 rseed   = random.seed
 sqrt   = math.sqrt
 exp    = math.exp
+ee     = math.e
+pi     = math.pi
 
 def r3(x)    : return round(x,3)
 def r3s(lst) : return map(r3,lst)
@@ -16,6 +18,10 @@ def r4(x)    : return round(x,4)
 def r4s(lst) : return map(r4,lst)
 def r5(x)    : return round(x,5)
 def r5s(lst) : return map(r5,lst)
+
+def say(x): 
+  sys.stdout.write(str(x)); sys.stdout.flush()
+
 
 class o:
   def __init__(i,**d)    : i.__dict__.update(d)
@@ -52,8 +58,8 @@ class Model:
     def __init__(i):
         i.about()
         i.evals = 0
-    def decide(i,retries=20):
-      assert retries>0,'cannot satisfy constraints'
+    def decide(i,retries=100):
+      assert retries>0,'cannot satisfy constraints while creating'
       x      = o(objs=None,decs=[f() for f in i.decs])
       x.objs = None
       return x if i.ok(x) else i.decide(retries-1) 
@@ -142,7 +148,46 @@ class ZDT1(Model):
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
 
+class Fonseca(Model):
+  n=3
+  def about(i):
+    def f1(can):
+      z = sum([(x - 1/sqrt(Fonseca.n))**2 for x in can.decs])
+      return 1 - ee**(-1*z)
+    def f2(can):
+      z = sum([(x + 1/sqrt(Fonseca.n))**2 for x in can.decs])
+      return 1 - ee**(-1*z)
+    def dec(x):
+      return An(x, lo=-4, hi=4)
+    i.decs = [dec(x) for x in range(Fonseca.n)]
+    i.objs = [Less("f1",  maker=f1),
+              Less("f2",  maker=f2)]    
 
+class Viennet4(Model):
+  n=2
+  def ok(i,can):
+     one,two = can.decs
+     g1 = -1*two - 4*one + 4
+     g2 = one + 1            
+     g3 = two - one + 2
+     return g1 >= 0 and g2 >= 0 and g3 >= 0
+  def about(i):
+    def f1(can):
+      one,two = can.decs
+      return (one - 2)**2 /2 + (two + 1)**2 /13 + 3
+    def f2(can):
+      one,two = can.decs
+      return (one + two - 3)**2 /175 + (2*two - one)**2 /17 - 13
+    def f3(can):
+      one,two= can.decs
+      return (3*one - 2*two + 4)**2 /8 + (one - two + 1)**2 /27 + 15
+    def dec(x):
+      return An(x,lo= -4,hi= 4)
+    i.decs = [dec(x) for x in range(Viennet4.n)]
+    i.objs = [Less("f1",maker=f1),
+              Less("f2",maker=f2),
+              Less("f3",maker=f3)]   
+    
 # meed hi los on decsions and objectives
 
 class Space:
@@ -153,11 +198,16 @@ class Space:
     i.lo    = [0 for _ in lst]
     i.hi    = [0 for _ in lst]
     i.update(one)
+  def updates(i,lst=[]):
+    map(i.update,lst)
   def update(i,one):
     for n,(lo,hi,new) in enumerate(zip(i.lo, i.hi,
                                        i.value(one))):
-      if new > hi: i.hi[n] = new
-      if new < lo: i.lo[n] = new
+      if new > hi:
+        i.hi[n] = new
+      if new < lo:
+        i.lo[n] = new
+      
   def dist(i,xs,ys):
     a, b = id(xs), id(ys)
     if a > b:
@@ -178,8 +228,6 @@ class Space:
       n += 1
     return sqrt(d) / sqrt(n)
   def norm(i,x,n):
-    if x > i.hi[n]: i.hi[n] = x
-    if x < i.lo[n]: i.lo[n] = x
     lo = i.lo[n]
     hi = i.hi[n]
     return (x- lo)/ (hi - lo + 0.0001)
@@ -263,27 +311,47 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-def graph_it(population, model, scale):
+def graph_it3(population, name, scale):
     directory = 'models/'
-    file_name = directory + model.__class__.__name__
+    file_name = directory + name
+    f1 = np.array([one.x for one in population])
+    f2 = np.array([one.y for one in population])
+    f3 = np.array([one.z for one in population])
+    fig = plt.figure()
+    ax = fig.add_subplot(111) #,projection="3d")
+    ax.scatter(f1, f2,f3, s = 40, color = '#000080', alpha=0.80)
+    ax.set_xlim(scale[0])
+    ax.set_ylim(scale[1])
+    
+    ax.set_zlim(scale[2])
+    ax.set_xlabel('f1')
+    ax.set_ylabel('f2')
+    ax.set_zlabel('f3')
+    fig.savefig(file_name)
+
+def graph_it2(population, name, scale):
+    directory = 'models/'
+    file_name = directory + name
     f1 = np.array([one.x for one in population])
     f2 = np.array([one.y for one in population])
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.scatter(f1, f2, s = 40, color = '#000080', alpha=0.80)
-    ax.set_xlim(scale[0])
-    ax.set_ylim(scale[1])
+    #ax.set_xlim(scale[0])
+    #ax.set_ylim(scale[1])
+    
     ax.set_xlabel('f1')
     ax.set_ylabel('f2')
     fig.savefig(file_name)
+    
 
-def mutate(one,log=None,p=0.33, value=same,evaluate=None,ok=None,retries=20):
+def mutate(one,log=None,p=0.33, value=same,evaluate=None,ok=None,retries=100):
   tmp= o(objs=None,
          decs = [mutate1(old,p,log.space.lo[n],log.space.hi[n])
                    for n,old
                    in enumerate(value(one))])
   if ok:
-    assert retries > 0,'too hard to satisfy constraints'
+    assert retries > 0,'too hard to satisfy constraints in mutation'
     if not ok(tmp):
       return mutate(one,
                     log=log,p=p, value=value,
@@ -293,7 +361,7 @@ def mutate(one,log=None,p=0.33, value=same,evaluate=None,ok=None,retries=20):
 
 def mutate1(old,p,lo,hi):
   x = (hi - lo)
-  y = old if p >= r() else old - x + 2 * x * r()
+  y = old if p >= r() else lo + x*r()
   return bound(y,lo,hi)
 
 def bound(x, lo, hi):
@@ -306,21 +374,22 @@ def normmean(log,lst):
   lst = [log.space.norm(x,n) for n,x in enumerate(lst)]
   return sum(lst)/ len(lst)
 
-def saControl(kmax,era,cooling):
+def saControl(kmax,era,cooling,verbose=False):
   def newEra():
     return not now in reports
   def startNewEra(sb,eb):
-    reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb,better=0, e=[])
+    reports[now] = o(lt=0,stagger=0,eb=eb,sb=sb, better=0, e=[])
   def oldEra():
     return (now - 1) in reports
   def finishOldEra():
     old = reports[now-1]
     sb  = old.sb
     eb  = old.eb
-    #print("%4d" %k,r4(old.eb)," ",
-     #     o(lt=old.lt,stagger=old.stagger,better=old.better),
-      #    end="")
-    #print(("  * %s" % sb.objs) if old.better > 0 else "")
+    if verbose:
+      print("%4d::" %k,r4(old.eb)," ",
+          o(lt=old.lt,stagger=old.stagger,better=old.better),
+          end="")
+      print(("  * %s" % sb.objs) if old.better > 0 else "")
     return sb,eb
   #--------------------------------
   sb, eb, reports = None, None, {}
@@ -336,33 +405,74 @@ def saControl(kmax,era,cooling):
 def doNothing(model,pop,*l,**d):
   return pop
   
-def optimize(model,how,seed=1,init=10,**d):
+def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   rseed(seed)
-  pop0   = [model.eval(model.decide())
+  pop0   = [model.eval(model.decide(retries=retries))
              for one in xrange(init)]
+  #check1(">",pop0)
   logDecs = Log(pop0, value=decs)
   logObjs = Log(pop0, value=objs)
-  #someNums(pop0,logObjs,model)
-  pop = how(model,pop0,logDecs,logObjs, **d)
-  #someNums(pop,logObjs,model)
+  pop = how(model,pop0,logDecs,logObjs, verbose=verbose,**d)
+  #check1("<",pop)
   return pop0,pop
+
+def check(s,(a,z)):
+  print("")
+  a = sorted(a[:],key=objs)
+  z = sorted(z[:],key=objs)
+  l = len(a)
+  mid = l // 2
+  for i in range(0,5) + [-1] + range(mid-2,mid+2) + [-1] + range(l - 5, l -1):
+    if i == -1:
+      print("")
+    else:
+      print(s,i,"b4",a[i].objs,"now",z[i].objs)
+
+def check1(s,a):
+  a = sorted(a[:],key=objs)
+  l = len(a)
+  mid = l // 2
+  for i in range(0,5) + [-1] + range(mid-2,mid+2) + [-1] + range(l - 5, l -1):
+    if i == -1:
+      print("")
+    else:
+      print(i,s,a[i].objs)
+
+  
+def threeD(threes,name,value=same):
+  all = [(o(),value(one)[:3]) for one in threes]
+  for a,x in all:
+    a.x = x[0]
+    a.y = x[1]
+    a.z = x[2]
+  graph_it3( [x[0] for x in all],name,(1,1,1))
+
+def twoD(twos,name,value=same):
+  all = [(o(),value(one)[:2]) for one in twos]
+  for a,x in all:
+    a.x = x[0]
+    a.y = x[1]
+  graph_it2( [x[0] for x in all],name,(1,1))
   
 def sa(model,_,
        logDecs,logObjs,
        era=50,
        kmax=1000, 
        aggr=normmean,
-       cooling=2,retries=20,
-       p=0.1,
+       cooling=2,
+       retries=100,
+       p=0.33,
+       verbose=False,
        **d):
+  print(verbose)
   sb = s = model.decide()
   eb = e = aggr(logObjs,model.eval(s).objs)
-  for t,now,history in saControl(kmax,era,cooling):
+  for t,now,history in saControl(kmax,era,cooling,verbose):
     sn  = mutate(s, p        = p,
                     ok       = model.ok,
                     log      = logDecs,
                     value    = decs,
-                    retries  = 20,
+                    retries  = retries,
                     evaluate = model.eval)
     logDecs + sn
     logObjs + sn
@@ -380,28 +490,35 @@ def sa(model,_,
     now.e += [e]
   return [sb]
 
-
 def someNums(inits,logObjs,model):
   nums= Nums(len(model.objs)+1,
               lambda x: x.objs+[normmean(logObjs,x.objs)],
               inits)
   print(model.__class__.__name__,
         map(lambda x:x.also().range, nums.nums))
+
+def dump(all,f,mode="w"):
+  where = open(f,mode)
+  where.write("####\n")
+  for one in all:
+    print(one)
+    where.write(", ".join(map(str,one)))
+    where.write("\n")
+  where.close()
   
-def de(model,frontier,logDecs,logObjs,era=50,repeats=10,cr=0.3,f=0.75):
+def de(model,frontier,logDecs,logObjs,era=50,repeats=10,verbose=False,cr=0.3,f=0.75):
+  frontier = frontier[:]
+  zero = frontier[:]
   for r in xrange(repeats):
-    for n in xrange(len(frontier)):
-      parent = frontier[n]
+    for n,parent in enumerate(frontier):
       child = smear(frontier,log=logDecs,f=f,
                     cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
       if model.bdom(child,parent):
-        frontier[n] = child
-      #elif not betters2:
-       # frontier.append(child)
+          frontier[n] = child
+    check(r,(zero,frontier))
   return frontier
-
 
 def bdoms(model,frontier,*_,**d):
   for x in frontier:
@@ -432,38 +549,54 @@ def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 
-def igd(models=[ZDT1],hows=[sa,de,bdoms],
-        repeats=10, seed0=1,init=300): 
-  hows = [(how,how.__name__,[]) for how in hows]
+def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
+        repeats=20, seed0=1,init=300):
+  class metas:
+    def __init__(i,how):
+      i.how  = how
+      i.name = how.__name__
+      i.first = []
+      i.last  = {}
+  hows = [metas(how) for how in hows]
   for model in models:
+    print(model.__name__)
     rseed(seed0)
     every = []
     best  = []
-    first = {}
     for n in xrange(repeats):
-      seed1 = int(1000000*r())
-      for how,name,last in hows:
-        #print(model.__name__,name,n)
-        first[name],tmp = optimize(model(),
-                                   how,seed=seed1,init=init,repeats=repeats)
-        last.extend(tmp)
-        every.extend(tmp)
-        best = bdoms(model(),best + tmp ,1)
-      every.extend(first[name])
-    space = Log(every, value = objs).space
-    for how,name,last in hows:
-       print(len(last),
-             [better(a,z) for a,z in
-              zip(ranges(space,best,first[name]),
-                  ranges(space,best,last))],
-             name) 
+      say("|")
+      seed1 = r()
+      for meta in hows:
+        say(".")
+        a,z = optimize(model(),how,seed=seed1,
+                       init=init,repeats=repeats)
+        every.extend(a+z)
+        meta.first  = a
+        meta.last[seed1]  = z
+        best = bdoms(model(),best + z ,1)
+    say("!")
+    space = Space(every[0],value=objs)
+    space.updates(every)
+    say("\n")
+    for meta in hows:
+       num = Num()
+       for last in meta.last.values():
+         for a,z in zip(meta.first,last):
+           _,d1 = space.closest(a,best)
+           _,d2 = space.closest(z,best)
+           num + better(d1,d2)
+       print(num.also().range,meta.name)
        
 def ranges(space,best,what):
   return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
 
 def better(a,z):
-  return z/(a+0.0001) #int(100*(1 - ((a - z)/(a+0.00001))))
+  return z
+  #return 100 - int(100*abs((a - z))/(a + 0.000001)) #/(a+0.0001) #int(100*(1 - ((a - z)/(a+0.00001))))
        
+#igd()
+#print(10*len(Fonseca().decs))
+#check("done",optimize(ZDT1(),de,init=300,repeats=10,verbose=True))
 igd()
 exit()
 
