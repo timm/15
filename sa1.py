@@ -165,6 +165,37 @@ class ZDT1(Model):
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
 
+class DTLZ7(Model):
+  def __init__(i,dec=10,obj=2):
+    i.dec, i.obj= 10,2
+  def about(i):
+    def f(x):
+      if x < i.dec - 1: return x
+    def g(x):
+      return 1 + 9/(i.obj)*sum(x for x in x.decs)
+    def h(lst,m):
+      return len(lst) -1 - sum(fg(f) for f in lst)
+
+class DTLZ7(model):
+  def __init__(i,nobjs=2):
+    i.ndecs, i.nobjs = nobjs-1,nobjs
+  def g(i,x):
+    g= 1 + 9/i.nobjs * sum(x.decs)
+  def h(i,x,g):
+    _h = i.nobjs
+    for j in range(x.nobjs-1):
+      _h -= i.f(x,j) /(1 + g) * (
+              1 + math.sin(3 * pi * i.f(x,j)))
+    return _h
+  def f(i,j,x):
+    if j < i.nobjs - 1:
+      return i.decs[j]
+    else:
+      _g = i.g(x)
+      return (1+ _g) * i.h(x,_g)
+
+    #XXX complete dtlz7
+    
 class Fonseca(Model):
   n=3
   def about(i):
@@ -570,19 +601,21 @@ def smear1(a,b,c,f,cr,lo,hi):
 
 # freeze distance to be min max on whole space
 def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
-        repeats=10, seed0=1,init=300):
+        repeats=5, seed0=1,init=300):
   class metas:
     def __init__(i,how):
       i.how  = how
       i.name = how.__name__
       i.last  = {}
+      i.first = {}
   hows = [metas(how) for how in hows]
   for model in models:
     print(model.__name__)
     rseed(seed0)
     every = []
-    best  = []
-    first = []
+    firsts = []
+    lasts = []
+    bests = []
     for n in xrange(repeats):
       say("|")
       seed1 = r()
@@ -590,25 +623,32 @@ def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
         say(".")
         a,z = optimize(model(),how,seed=seed1,
                        init=init,repeats=repeats)
-        every.extend(a+z)
         meta.last[seed1]  = z
-        print("")
-        print(len(first))
-        first = bdoms(model(),first+a,1)
-        print(len(first))
-        best  = bdoms(model(),best+z ,1)
-    say("!")    
+        meta.first[seed1] = a
+        firsts += a
+        lasts += z
+        every += a
+        every += z
+        bests = bdoms(model(),bests+z ,1)
+    say("!")
+    print("")
+    print(len(every))
     space = Space(every[0],value=objs)
     space.updates(every)
     say("\n")
     for meta in hows:
-       num = Num()
-       for last in meta.last.values():
-         for a,z in zip(first,last):
-           _,d1 = space.closest(a,best)
-           _,d2 = space.closest(z,best)
-           num + better(d1,d2)
-       print(num.also().range,meta.name)
+       baseline = Num()
+       better   = Num()
+       for k in meta.last:
+         for a in bdoms(model(),meta.first[k]):
+           _,d = space.closest(a,bests)
+           baseline + d
+         for z in meta.last[k]:
+           _,d = space.closest(z,bests)
+           better + d
+       print("\n",meta.name)
+       print(baseline.also().range)
+       print(better  .also().range)
        
 def ranges(space,best,what):
   return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
