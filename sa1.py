@@ -72,6 +72,8 @@ class Model:
         return i.eval(i())
     def ok(i,x):
       return True
+    def select(i,x,y,how="bdom",space=None):
+      return i.bdom(x,y) if how == "bdom" else i.cdom(x,y,space)
     def bdom(i,x,y,_=None):
         betters = False
         for u,v,meta in zip(x.objs,y.objs,i.objs):
@@ -80,7 +82,7 @@ class Model:
             elif u != v:
                 return False
         return betters
-    def cdom(i,x, y,space):
+    def cdom(i,x, y,space,bigEnough=0.01):
       def w(better):
         return -1 if better == lt else 1
       def expLoss(better,x,y,n):
@@ -94,7 +96,10 @@ class Model:
                    for xi, yi,meta
                    in zip(x,y,i.objs) ]
         return sum(losses) / n
-      return x if loss("x<y",x,y) < loss("y>x",y,x) else y
+      l1 = loss("x<y",x,y)
+      l2 = loss("x>y",y,x)
+      if abs(l1 - l2) < bigEnough: return False
+      return l1 < l2 
  
 
       
@@ -134,12 +139,10 @@ class Num:
   def also(i):
     if not i._also:
       lst = sorted(i.some.all)
-      q   = int(len(lst)/4)
+      q   = int(len(lst)/10)
       i._also = o(some=lst,
-                  median=lst[2*q],
-                  q1 = lst[q],
-                  q3 = lst[3*q],
-                  range=r3s([lst[0],lst[q],lst[2*q],lst[3*q],lst[-1]]))
+                  median=lst[5*q],
+                  range=r3s([lst[q],lst[3*q],lst[5*q],lst[7*q],lst[9*q]]))
     return i._also
   
 class Nums:
@@ -165,37 +168,43 @@ class ZDT1(Model):
     i.objs = [Less("f1",maker=f1),
               Less("f2",maker=f2)]
 
-class DTLZ7(Model):
-  def __init__(i,dec=10,obj=2):
-    i.dec, i.obj= 10,2
-  def about(i):
-    def f(x):
-      if x < i.dec - 1: return x
-    def g(x):
-      return 1 + 9/(i.obj)*sum(x for x in x.decs)
-    def h(lst,m):
-      return len(lst) -1 - sum(fg(f) for f in lst)
 
-class DTLZ7(model):
-  def __init__(i,nobjs=2):
+def DTLZ7_2_3(): return DTLZ7()
+def DTLZ7_4_5(): return DTLZ7(5)
+def DTLZ7_6_7(): return DTLZ7(7)
+
+
+class DTLZ7(Model):
+  def __init__(i,nobjs=3):
     i.ndecs, i.nobjs = nobjs-1,nobjs
+    Model.__init__(i)
   def g(i,x):
-    g= 1 + 9/i.nobjs * sum(x.decs)
+    return 1 + 9/i.nobjs * sum(x.decs)
   def h(i,x,g):
     _h = i.nobjs
-    for j in range(x.nobjs-1):
-      _h -= i.f(x,j) /(1 + g) * (
-              1 + math.sin(3 * pi * i.f(x,j)))
+    for j in range(i.nobjs-1):
+      _f  = i.f("a",j,x)
+      _h -=  _f /(1 + g) * (
+              1 + math.sin(3 * pi * _f))
     return _h
-  def f(i,j,x):
-    if j < i.nobjs - 1:
-      return i.decs[j]
+  def f(i,s,j,x):
+    if j < (i.nobjs - 1):
+      return x.decs[j]
     else:
       _g = i.g(x)
       return (1+ _g) * i.h(x,_g)
-
+  def about(i):
+    def obj(j):
+      return lambda x: i.f("x",j,x)
+    def dec(x):
+      return An(x,lo=0,hi=1)
+    i.decs = [dec(x) for x in range(i.ndecs)]
+    i.objs = [Less("f%s" % j,
+                   maker=obj(j))
+                   for j in range(i.nobjs)]
     #XXX complete dtlz7
-    
+
+
 class Fonseca(Model):
   n=3
   def about(i):
@@ -457,6 +466,7 @@ def doNothing(model,pop,*l,**d):
   
 def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   rseed(seed)
+  init=10*len(model.objs)
   pop0   = [model.eval(model.decide(retries=retries))
              for one in xrange(init)]
   #check1(">",pop0)
@@ -557,8 +567,27 @@ def dump(all,f,mode="w"):
     where.write(", ".join(map(str,one)))
     where.write("\n")
   where.close()
-  
-def de(model,frontier,logDecs,logObjs,era=50,repeats=10,verbose=False,cr=0.3,f=0.75):
+
+def bdoms(model,frontier,*_,**d):
+  for x in frontier:
+    x.alive = True
+  for x in frontier:
+    for y in frontier:
+      if y.alive and model.bdom(x,y):
+        y.alive = False
+  return [f for f in frontier if f.alive]
+
+def cdoms(model,frontier,space):
+  for x in frontier:
+    x.alive = True
+  for x in frontier:
+    for y in frontier:
+      if y.alive and model.cdom(x,y,space):
+         y.alive = False
+  return [f for f in frontier if f.alive]
+
+def de(model,frontier,logDecs,logObjs,era=50,
+       repeats=10,select="bdom",verbose=False,cr=0.3,f=0.75,**d):
   zero = frontier[:]
   for r in xrange(repeats):
     for n,parent in enumerate(frontier):
@@ -566,19 +595,12 @@ def de(model,frontier,logDecs,logObjs,era=50,repeats=10,verbose=False,cr=0.3,f=0
                     cr=cr,evaluate=model.eval)
       logDecs + child
       logObjs + child
-      if model.bdom(child,parent,logObjs.space):
+      if model.select(child,parent,select,logObjs.space):
           frontier[n] = child
     check(r,(zero,frontier))
   return frontier
 
-def bdoms(model,frontier,*_,**d):
-  for x in frontier:
-    x.alive = True
-  for x in frontier:
-    for y in frontier:
-      if model.bdom(x,y):
-        y.alive = False
-  return [f for f in frontier if f.alive]
+
 
 def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
   aa, bb, cc = any(all), any(all), any(all)
@@ -600,8 +622,8 @@ def smear1(a,b,c,f,cr,lo,hi):
   return bound(a + f*(b - c) if r()< cr else a, lo, hi)
 
 # freeze distance to be min max on whole space
-def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
-        repeats=5, seed0=1,init=300):
+def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
+        repeats=5, seed0=1,init=300,selects=bdoms,select="bdom"):
   class metas:
     def __init__(i,how):
       i.how  = how
@@ -610,7 +632,6 @@ def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
       i.first = {}
   hows = [metas(how) for how in hows]
   for model in models:
-    print(model.__name__)
     rseed(seed0)
     every = []
     firsts = []
@@ -622,34 +643,48 @@ def igd(models=[Fonseca,ZDT1],hows=[sa,de,bdoms],
       for meta in hows:
         say(".")
         a,z = optimize(model(),how,seed=seed1,
-                       init=init,repeats=repeats)
+                       init=init,repeats=repeats,select=select)
         meta.last[seed1]  = z
         meta.first[seed1] = a
         firsts += a
         lasts += z
         every += a
         every += z
-        bests = bdoms(model(),bests+z ,1)
-    say("!")
-    print("")
-    print(len(every))
+        say(1)
+        space1 = Space(z[0],value=objs)
+        space1.updates(a+z)
+        say(2)
+        bests = selects(model(),bests+z,space1)
+        say(3)
+    say("!!")
     space = Space(every[0],value=objs)
     space.updates(every)
     say("\n")
     for meta in hows:
        baseline = Num()
        better   = Num()
+       eden     = Num()
        for k in meta.last:
-         for a in bdoms(model(),meta.first[k]):
+         for e in meta.first[k]:
+           _,d=space.closest(e,bests)
+           eden + d
+         for a in selects(model(),meta.first[k],space):
            _,d = space.closest(a,bests)
            baseline + d
          for z in meta.last[k]:
            _,d = space.closest(z,bests)
            better + d
-       print("\n",meta.name)
-       print(baseline.also().range)
-       print(better  .also().range)
-       
+       print(eden.also().range,",eden,",model.__name__)
+       print(baseline.also().range,",baseline,",model.__name__)
+       print(better  .also().range,",",meta.name, ",",model.__name__)
+       comp1= [int(100*(a-z)/(a+0.00001))
+               for a,z in zip(eden.also().range,baseline.also().range)]
+       comp2= [int(100*(a-z)/(a+0.00001))
+               for a,z in zip(eden.also().range,better.also().range)]
+       print("\n")
+       print(comp1,"eden - baseline")
+       print(comp2,"eden - better",meta.name)
+         
 def ranges(space,best,what):
   return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
 
@@ -659,8 +694,20 @@ def better(a,z):
        
 #igd()
 #print(10*len(Fonseca().decs))
-#optimize(ZDT1(),de,init=300,repeats=1,verbose=True)
-igd(models=[ZDT1,Fonseca],hows=[de])
+print("cdom")
+igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
+    hows=[de],init=300,repeats=10,verbose=True,
+    selects=cdoms, select="cdom")
+
+print("bdom")
+igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
+    hows=[de],init=300,repeats=10,verbose=True,
+    selects=bdoms, select="bdom")
+
+#igd(models=[Fonseca,ZDT1],hows=[de],init=300,repeats=1,verbose=True,
+ #         selects=cdoms, select="cdom")
+#igd(models=[DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7,Fonseca,ZDT1],hows=[de])
+#igd()
 exit()
 
 def gale0(model,repeats=100):
