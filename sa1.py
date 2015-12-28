@@ -54,6 +54,7 @@ class Decision:
 
 An = A = Decision
 
+
 class Model:
     def __init__(i):
         i.about()
@@ -304,7 +305,7 @@ class Space:
 class Log:
   "Holds individuals, knows their geometry."
   def __init__(i,inits, value=same,
-               big=0.025,bins=10,space=None):
+               big=0.025,bins=16,space=None):
     i.big, one, i.value,i.values = big,inits[0],value,inits[:]
     i.bins = bins
     i._pos  = {}
@@ -339,11 +340,13 @@ class Log:
         x = a
       y = sqrt(a**2 - x**2)
       binx, biny = i.bin(x), i.bin(y)
-      i.cells[ binx ][ biny ] += [one]
+      items = i.cells[ binx ][ biny ]
+      before = items[0] if items else None
+      items += [one]
       i.values += [one]
       i._pos[id(one)] = o(x=x,y=y,binx=binx,
                           biny=biny,a=a,b=b)
-      return x,y
+      return before,x,y
   def bin(i,x):
     x = int(x/(i.c/i.bins))
     return min(i.bins - 1, x)
@@ -592,12 +595,20 @@ def de(model,frontier,logDecs,logObjs,era=50,
   for r in xrange(repeats):
     for n,parent in enumerate(frontier):
       child = smear(frontier,log=logDecs,f=f,
-                    cr=cr,evaluate=model.eval)
-      logDecs + child
+                    cr=cr,evaluate=None)
+      before,_,_ = logDecs + child
+      if False and before:
+         model.eval(before)
+         child.objs = before.objs
+      model.eval(child)
       logObjs + child
       if model.select(child,parent,select,logObjs.space):
           frontier[n] = child
-    check(r,(zero,frontier))
+    #check(r,(zero,frontier))
+    for one in sorted(logDecs.values,key = lambda z: logDecs._pos[id(z)].x):
+      print("r",r,logDecs._pos[id(one)].x,logObjs._pos[id(one)].x)
+  
+  print("-EVALS",model.evals)
   return frontier
 
 
@@ -699,82 +710,13 @@ igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
     hows=[de],init=300,repeats=10,verbose=True,
     selects=cdoms, select="cdom")
 
-print("bdom")
-igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
-    hows=[de],init=300,repeats=10,verbose=True,
-    selects=bdoms, select="bdom")
+#print("bdom")
+#igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
+ #   hows=[de],init=300,repeats=10,verbose=True,
+  #  selects=bdoms, select="bdom")
 
 #igd(models=[Fonseca,ZDT1],hows=[de],init=300,repeats=1,verbose=True,
  #         selects=cdoms, select="cdom")
 #igd(models=[DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7,Fonseca,ZDT1],hows=[de])
 #igd()
-exit()
-
-def gale0(model,repeats=100):
-  pop  = Log([model() for _ in xrange(repeats)],
-                    value=decs)
-  for _ in range(10):
-    print(smear(pop.values,
-                lo = pop.space.lo,
-                hi = pop.space.hi,
-                value=decs))
-  #for i in pop.values:
-   # print("z",pop.pos(i).x,
-    #      pop.pos(i).y)
-  
-
-
-exit()
-  
-gale0(ZDT1())
-
-exit()
-model=ZDT1()
-m=0
-seed(12)
-decs = lambda x:x.decs
-grid=Log([model.one() for _ in range(32)],
-        value=decs)
-for _ in range(1000):   
-    x = model.one()
-    y = model.one()
-    grid + x
-    grid + y
-    if model.bdom(x,y): m += 1
-want = 0.3
-want = 1 - want if model.bdom(grid.west,grid.east) else want
-
-grid1 = grid.half(easterly)
-
-print("")
-print(r3s(grid.space.lo))
-print(r3s(grid1.space.lo))
-
-print(r3s(grid.space.hi))
-print(r3s(grid1.space.hi))
-
-print("grdi1",m,len(grid.values))
-print(grid.bounds())
-print(grid.east.x,grid.east.y)
-print(grid.west.x,grid.west.y)
-
-graph_it(grid.values,model,grid.bounds())
-print(len([_ for x in grid.values if x.easterly]))
-
-#for one in grid.values:
- #   print(one.x,one.y)
-
-for n1,x in enumerate(grid.cells):
-  for n2,y in enumerate(x):
-    if y:
-      print(n1,n2,len(y))
-
-
-a=o(b=1,c=2)
-
-a.setOnce('b',10)
-a.setOnce('d',10)
-a.setOnce('d',11)
-print(a)
-
 

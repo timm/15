@@ -1,0 +1,63 @@
+LHS: devide into 16*16. only sample ine per cell
+RHSL eval all
+
+|.____-EVALS 60	|.____________-EVALS 220
+123|.______-EVALS 54	123|._________-EVALS 220
+123|.________-EVALS 60	123|.__________-EVALS 220
+123|._____-EVALS 53	123|.__________-EVALS 220
+123|.___-EVALS 52	123|.___-EVALS 220
+123|._______-EVALS 51	123|._________-EVALS 220
+123|._____-EVALS 56	123|.______-EVALS 220
+123|.___-EVALS 47	123|.____-EVALS 220
+123|._______-EVALS 47	123|._________-EVALS 220
+123|.____-EVALS 63	123|._______-EVALS 220
+[25, 8, 0, 0, -5] eden - baseline	[66, 39, 22, 13, 6] eden - baseline
+[89, 68, 26, 3, -34] eden - better de	[98, 95, 91, 82, 58] eden - better de
+|.___-EVALS 47	|.____-EVALS 220
+123|.__-EVALS 38	123|.__-EVALS 220
+123|.___-EVALS 42	123|.____-EVALS 220
+123|.___-EVALS 52	123|.___-EVALS 220
+123|.___-EVALS 54	123|.____-EVALS 220
+123|.___-EVALS 33	123|.___-EVALS 220
+123|.___-EVALS 40	123|.___-EVALS 220
+123|.____-EVALS 47	123|.___-EVALS 220
+123|.__-EVALS 46	123|.____-EVALS 220
+123|.__-EVALS 51	123|.___-EVALS 220
+[73, -24, 0, 0, 4] eden - baseline	[69, -25, 0, 0, 3] eden - baseline
+[99, 91, 87, 66, 7] eden - better de	[95, 96, 95, 10, 6] eden - better de
+|.________-EVALS 69	|._________-EVALS 330
+123|.______-EVALS 49	123|.____-EVALS 330
+123|._____-EVALS 58	123|.______-EVALS 330
+123|.__-EVALS 49	123|.___-EVALS 330
+123|._____-EVALS 60	123|._____-EVALS 330
+123|.____-EVALS 56	123|.____-EVALS 330
+123|.______-EVALS 61	123|.______-EVALS 330
+123|.___-EVALS 60	123|.___-EVALS 330
+123|.____-EVALS 56	123|.____-EVALS 330
+123|.___-EVALS 60	123|.___-EVALS 330
+[74, 66, 63, 0, 13] eden - baseline	[79, 69, 63, 0, 14] eden - baseline
+[97, 92, 80, 79, 18] eden - better de	[99, 94, 84, 84, 17] eden - better de
+|.____-EVALS 106	|.___________-EVALS 550
+123|.____-EVALS 101	123|.____-EVALS 550
+123|._______-EVALS 106	123|._______-EVALS 550
+123|._____-EVALS 104	123|.______-EVALS 550
+123|._______-EVALS 91	123|._________-EVALS 550
+123|._________-EVALS 109	123|.______-EVALS 550
+123|.______-EVALS 97	123|.______-EVALS 550
+123|.____-EVALS 116	123|.____-EVALS 550
+123|.______-EVALS 117	123|._____-EVALS 550
+123|.__-EVALS 109	123|.__-EVALS 550
+[69, 63, 54, 16, 12] eden - baseline	[58, 65, 56, 12, 8] eden - baseline
+[83, 65, 57, 64, 50] eden - better de	[90, 80, 80, 70, 15] eden - better de
+|.______-EVALS 116	|.______-EVALS 770
+123|.______-EVALS 134	123|.______-EVALS 770
+123|._______-EVALS 110	123|._______-EVALS 770
+123|.____-EVALS 109	123|.____-EVALS 770
+123|.____-EVALS 130	123|.______-EVALS 770
+123|._______-EVALS 122	123|.____-EVALS 770
+123|._________-EVALS 126	123|._______-EVALS 770
+123|.___-EVALS 113	123|.__-EVALS 770
+123|._______-EVALS 138	123|.________-EVALS 770
+123|.________-EVALS 129	123|._______-EVALS 770
+[66, 64, 49, 48, 0] eden - baseline	[76, 59, 48, 47, 1] eden - baseline
+[68, 60, 55, 56, 46] eden - better de	[87, 78, 67, 68, 69] eden - better de
