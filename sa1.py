@@ -12,6 +12,10 @@ exp    = math.exp
 ee     = math.e
 pi     = math.pi
 
+def first(lst): return lst[0]
+def second(lst): return lst[1]
+def last(lst): return[-1]
+
 def r3(x)    : return round(x,3)
 def r3s(lst) : return map(r3,lst)
 def r4(x)    : return round(x,4)
@@ -324,6 +328,8 @@ class Log:
     i.cells     = [[[] for _ in range(i.bins)]
                    for _ in range(i.bins)]
     map(i.__add__,[i.east,i.west]+b4)
+  def about(i,one):
+    return i._pos[id(one)]
   def __add__(i,one):
     a = i.space.dist(i.east,one)
     b = i.space.dist(i.west,one)
@@ -469,7 +475,7 @@ def doNothing(model,pop,*l,**d):
   
 def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   rseed(seed)
-  init=10*len(model.objs)
+  init=20*len(model.objs)
   pop0   = [model.eval(model.decide(retries=retries))
              for one in xrange(init)]
   #check1(">",pop0)
@@ -589,6 +595,38 @@ def cdoms(model,frontier,space):
          y.alive = False
   return [f for f in frontier if f.alive]
 
+def what4(model,frontier,logDecs,logObjs,era=50,budget=12,
+         repeats=10,select="bdom",verbose=False,**d):
+  budget = max(1,budget//4)
+  repeats = 1
+  for r in xrange(repeats):
+    quads   = Log(frontier,value=decs,bins=2)
+    corners = {}
+    wins    = {}
+    directions = [(0,0),(0,1),(1,0),(1,1)]
+    for x1,y1 in directions:
+      corner = corners[(x1,y1)] =  []
+      wins[(x1,y1)] = 0
+      tmp = []
+      for one in quads.cells[x1][y1]:
+        about = quads.about(one)
+        x2,y2 = about.x,about.y
+        d     = ((x1-x2)**2 + (y1-y2)**2)**0.5
+        tmp += [(d,one)]
+      corner[:] = map(model.eval,
+                      map(second,
+                          sorted(tmp)[:budget]))
+    for d1,items1 in corners.items():
+      for d2,items2 in corners.items():
+        for one in items1:
+          for two in items2:
+            if model.select(one,two,select,logObjs.space):
+              wins[d1] += 1
+    _,win = sorted([(v,k) for k,v in wins.items()])[-1]
+    frontier = corners[win]
+    print(win,len(frontier))
+  return frontier
+
 def de(model,frontier,logDecs,logObjs,era=50,
        repeats=10,select="bdom",verbose=False,cr=0.3,f=0.75,**d):
   zero = frontier[:]
@@ -605,10 +643,10 @@ def de(model,frontier,logDecs,logObjs,era=50,
       if model.select(child,parent,select,logObjs.space):
           frontier[n] = child
     #check(r,(zero,frontier))
-    for one in sorted(logDecs.values,key = lambda z: logDecs._pos[id(z)].x):
-      print("r",r,logDecs._pos[id(one)].x,logObjs._pos[id(one)].x)
+    #for one in sorted(logDecs.values,key = lambda z: logDecs._pos[id(z)].x):
+     # print("r",r,logDecs._pos[id(one)].x,logObjs._pos[id(one)].x)
   
-  print("-EVALS",model.evals)
+  #print("-EVALS",model.evals)
   return frontier
 
 
@@ -705,10 +743,19 @@ def better(a,z):
        
 #igd()
 #print(10*len(Fonseca().decs))
-print("cdom")
-igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
-    hows=[de],init=300,repeats=10,verbose=True,
-    selects=cdoms, select="cdom")
+def cdomDemo():
+  print("cdom")
+  igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
+      hows=[de],init=300,repeats=10,verbose=True,
+      selects=cdoms, select="cdom")
+
+def what4Demo():
+  print("cdom")
+  igd(models=[DTLZ7_6_7],
+      hows=[what4],init=300,repeats=10,verbose=True,
+      selects=cdoms, select="cdom")
+
+what4Demo()
 
 #print("bdom")
 #igd(models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
