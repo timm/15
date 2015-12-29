@@ -602,13 +602,56 @@ def what4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
          repeats=10,select="bdom",verbose=False,**d):
   budget = max(1,budget//4)
   size    = len(frontier)
-  repeats=8
+  repeats = 8
   for r in xrange(repeats+1):
     wanted = size - len(frontier)
-    print("w",wanted)
     for _ in xrange(wanted): 
-      child = smear(frontier,log=logDecs0,f=f,
+      child = smear(frontier,log=logDecs0,f=f,ok=model.ok,
                      cr=cr,evaluate=None)
+      frontier += [child]
+    if r == repeats:
+      return frontier
+    logDecs   = Log(frontier,value=decs,bins=2)
+    corners = {}
+    wins    = {}
+    directions = [(0,0),(0,1),(1,0),(1,1)]
+    logObjs=None
+    for x1,y1 in directions:
+      corner = corners[(x1,y1)] =  []
+      wins[(x1,y1)] = 0
+      tmp = []
+      for one in logDecs.cells[x1][y1]:
+        about = logDecs.about(one)
+        x2,y2 = about.x,about.y
+        d     = ((x1-x2)**2 + (y1-y2)**2)**0.5
+        tmp += [(d,one)]
+      corner[:] = map(model.eval,
+                      map(second,
+                          sorted(tmp)[:budget]))
+      if logObjs:
+        for one in corner:
+          logObjs + one
+      else:
+        logObjs = Log(corner,value=objs)
+    for d1,items1 in corners.items():
+      for d2,items2 in corners.items():
+        for one in items1:
+          for two in items2:
+            if model.select(one,two,select,logObjs.space):
+              wins[d1] += len(items1)/size
+    maybe = [(wins[k],k) for k in corners if corners[k]]
+    win   = sorted(maybe)[-1][1]
+    frontier = corners[win]
+
+def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
+         repeats=10,select="bdom",verbose=False,**d):
+  budget = max(1,budget//4)
+  size    = len(frontier)
+  repeats = 8
+  for r in xrange(repeats+1):
+    wanted = size - len(frontier)
+    for _ in xrange(wanted):
+      child = interpolate(frontier,ok=model.ok)
       frontier += [child]
     if r == repeats:
       return frontier
@@ -666,8 +709,18 @@ def de(model,frontier,logDecs,logObjs,era=50,
   #print("-EVALS",model.evals)
   return frontier
 
-
-
+def interpolate(all,ok=None,retries=20,evaluate=None):
+   one=any(all)
+   two=any(all)
+   tmp = o(objs = None,
+             decs = [x + r()*(y-x)
+                     for x,y in zip(one.decs,two.decs)])
+   if ok:
+     assert retries > 0, 'too hard to satisfy constraints'
+     if not ok(tmp):
+       return interpolate(all,ok=ok,retries=retries-1,evaluate=evaluate)
+   return evaluate(tmp) if evaluate else tmp
+ 
 def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
   aa, bb, cc = any(all), any(all), any(all)
   tmp= o(objs=None,
@@ -770,7 +823,7 @@ def what4Demo():
   print("cdom")
   igd(#models=[DTLZ7_6_7],
       models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
-      hows=[what4,de],init=300,repeats=10,verbose=True,
+      hows=[what4,smear4,de],init=300,repeats=10,verbose=True,
       selects=cdoms, select="cdom")
 
 what4Demo()
