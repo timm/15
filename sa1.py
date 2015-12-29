@@ -649,12 +649,14 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
   size    = len(frontier)
   repeats = 8
   for r in xrange(repeats+1):
+    ## grow
     wanted = size - len(frontier)
     for _ in xrange(wanted):
       child = interpolate(frontier,ok=model.ok)
       frontier += [child]
     if r == repeats:
       return frontier
+    ## place into bins
     logDecs   = Log(frontier,value=decs,bins=2)
     corners = {}
     wins    = {}
@@ -677,6 +679,7 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
           logObjs + one
       else:
         logObjs = Log(corner,value=objs)
+    ## which bin wins the most?
     for d1,items1 in corners.items():
       for d2,items2 in corners.items():
         for one in items1:
@@ -685,6 +688,7 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
               wins[d1] += len(items1)/size
     maybe = [(wins[k],k) for k in corners if corners[k]]
     win   = sorted(maybe)[-1][1]
+    ## replace the frontier with the new bins
     frontier = corners[win]
 
 def de(model,frontier,logDecs,logObjs,era=50,
