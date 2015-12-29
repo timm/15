@@ -166,6 +166,7 @@ class ZDT1(Model):
       return x.decs[0]
     def f2(x):
       g = 1 + 9 * sum(x for x in x.decs[1:] )/(ZDT1.n-1)
+      
       return  g * abs(1 - sqrt(x.decs[0]*g))
     def dec(x):
       return An(x,lo=0,hi=1)
@@ -598,7 +599,7 @@ def cdoms(model,frontier,space):
          y.alive = False
   return [f for f in frontier if f.alive]
 
-def what4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
+def what4(model,frontier,logDecs0,logObjs,era=50,budget=16,f=0.75,cr=0.3,
          repeats=10,select="bdom",verbose=False,**d):
   budget = max(1,budget//4)
   size    = len(frontier)
@@ -639,17 +640,22 @@ def what4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
           for two in items2:
             if model.select(one,two,select,logObjs.space):
               wins[d1] += len(items1)/size
+    
     maybe = [(wins[k],k) for k in corners if corners[k]]
     win   = sorted(maybe)[-1][1]
     frontier = corners[win]
 
-def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
+def smarter(m,f,d,o,**rest): return smear4(m,f,d,o,bestus=-1,**rest)
+def dumber( m,f,d,o,**rest): return smear4(m,f,d,o,bestus=0 ,**rest)
+
+def smear4(model,frontier,logDecs0,logObjs,era=50,budget=16,f=0.75,cr=0.3,bestus=-1,
          repeats=10,select="bdom",verbose=False,**d):
   budget = max(1,budget//4)
   size    = len(frontier)
   repeats = 8
   for r in xrange(repeats+1):
     ## grow
+    say("g")
     wanted = size - len(frontier)
     for _ in xrange(wanted):
       child = interpolate(frontier,ok=model.ok)
@@ -657,6 +663,7 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
     if r == repeats:
       return frontier
     ## place into bins
+    say("b")
     logDecs   = Log(frontier,value=decs,bins=2)
     corners = {}
     wins    = {}
@@ -680,6 +687,7 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
       else:
         logObjs = Log(corner,value=objs)
     ## which bin wins the most?
+    say("w")
     for d1,items1 in corners.items():
       for d2,items2 in corners.items():
         for one in items1:
@@ -687,9 +695,54 @@ def smear4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
             if model.select(one,two,select,logObjs.space):
               wins[d1] += len(items1)/size
     maybe = [(wins[k],k) for k in corners if corners[k]]
-    win   = sorted(maybe)[-1][1]
+    win   = sorted(maybe)[bestus][1]
     ## replace the frontier with the new bins
     frontier = corners[win]
+
+def nudge4(model,frontier,logDecs0,logObjs,era=50,budget=8,bestus=-1,
+         repeats=10,select="bdom",verbose=False,**d):
+  budget = max(1,budget//4)
+  size    = len(frontier)
+  repeats = 8
+  for r in xrange(repeats):
+    ## place into bins
+    say("b")
+    logDecs   = Log(frontier,value=decs,bins=2)
+    corners = {}
+    wins    = {}
+    directions = [(0,0),(0,1),(1,0),(1,1)]
+    logObjs=None
+    for x1,y1 in directions:
+      corner = corners[(x1,y1)] =  []
+      wins[(x1,y1)] = 0
+      tmp = []
+      for one in logDecs.cells[x1][y1]:
+        about = logDecs.about(one)
+        x2,y2 = about.x,about.y
+        d     = ((x1-x2)**2 + (y1-y2)**2)**0.5
+        tmp += [(d,one)]
+      corner[:] = map(model.eval,
+                      map(second,
+                          sorted(tmp)[:budget]))
+      if logObjs:
+        for one in corner:
+          logObjs + one
+      else:
+        logObjs = Log(corner,value=objs)
+    ## which bin wins the most?
+    say("w")
+    for d1,items1 in corners.items():
+      for d2,items2 in corners.items():
+        for one in items1:
+          for two in items2:
+            if model.select(one,two,select,logObjs.space):
+              wins[d1] += len(items1)/size
+    maybe    = [(wins[k],k) for k in corners if corners[k]]
+    win      = sorted(maybe)[bestus][1]
+    there    = corners[win][0]
+    x,y=win
+    frontier = [nudge(here,there,ok=model.ok,log=logDecs0) for here in logDecs.cells[x][y]]
+  return frontier
 
 def de(model,frontier,logDecs,logObjs,era=50,
        repeats=10,select="bdom",verbose=False,cr=0.3,f=0.75,**d):
@@ -724,6 +777,17 @@ def interpolate(all,ok=None,retries=20,evaluate=None):
      if not ok(tmp):
        return interpolate(all,ok=ok,retries=retries-1,evaluate=evaluate)
    return evaluate(tmp) if evaluate else tmp
+
+def nudge(here,there,log=None,ok=None,retries=20,evaluate=None,push=4):
+   "nudge here towards there"
+   tmp = o(objs = None,
+             decs = [bound(here1 + r()*push*(there1-here1),log.space.lo[n],log.space.hi[n])
+                     for n,(here1,there1) in enumerate(zip(here.decs,there.decs))])
+   if ok:
+     assert retries > 0, 'too hard to satisfy constraints'
+     if not ok(tmp):
+       return nudge(here,there,log=None,push=push,ok=ok,retries=retries-1,evaluate=evaluate)
+   return evaluate(tmp) if evaluate else tmp
  
 def smear(all,log=None,f=0.25,cr=0.5,ok=None,retries=20,evaluate=None):
   aa, bb, cc = any(all), any(all), any(all)
@@ -755,7 +819,7 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
       i.first = {}
   hows = [metas(how) for how in hows]
   for model in models:
-    print(model.__name__)
+    print("-",model.__name__)
     rseed(seed0)
     every = []
     firsts = []
@@ -766,7 +830,7 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
       seed1 = r()
       for meta in hows:
         say(".")
-        a,z = optimize(model(),how,seed=seed1,
+        a,z = optimize(model(),meta.how,seed=seed1,
                        init=init,repeats=repeats,select=select)
         meta.last[seed1]  = z
         meta.first[seed1] = a
@@ -777,13 +841,15 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
         say(1)
         space1 = Space(z[0],value=objs)
         space1.updates(a+z)
-        say(2)
+        say(2); say(":");
+        say(len(bests+z))
         bests = selects(model(),bests+z,space1)
         say(3)
     say("!!")
     space = Space(every[0],value=objs)
     space.updates(every)
     say("\n")
+    once=True
     for meta in hows:
        baseline = Num()
        better   = Num()
@@ -805,8 +871,10 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
                for a,z in zip(eden.also().range,baseline.also().range)]
        comp2= [int(100*(a-z)/(a+0.00001))
                for a,z in zip(eden.also().range,better.also().range)]
-       print(comp1,"eden - baseline")
-       print(comp2,"eden - better",meta.name)
+       if once:
+         print(comp1,"eden - baseline")
+         once=False
+       print(comp2,"eden - ",meta.name)
          
 def ranges(space,best,what):
   return Num([space.closest(one,best)[1] for one in what]).also().range[1:4]
@@ -827,7 +895,8 @@ def what4Demo():
   print("cdom")
   igd(#models=[DTLZ7_6_7],
       models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
-      hows=[what4,smear4,de],init=300,repeats=10,verbose=True,
+      hows=[nudge4,de,smarter], #dumber, smarter,what4,de],
+      init=300,repeats=10,verbose=True,
       selects=cdoms, select="cdom")
 
 what4Demo()
