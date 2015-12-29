@@ -253,13 +253,15 @@ class Viennet4(Model):
 # meed hi los on decsions and objectives
 
 class Space:
-  def __init__(i,one,value=same):
+  def __init__(i,one=None,value=same,inits=[]):
     i.value = value
     i.cache = {}
+    one = one or inits[0]
     lst     = value(one)
+    assert lst,"need one"
     i.lo    = [0 for _ in lst]
     i.hi    = [0 for _ in lst]
-    i.update(one)
+    i.updates(inits)
   def updates(i,lst=[]):
     map(i.update,lst)
   def update(i,one):
@@ -341,7 +343,7 @@ class Log:
       return i + one
     else:
       i.space.update(one)
-      x = (a**2 + i.c**2 - b**2) / (2*i.c)
+      x = (a**2 + i.c**2 - b**2) / (2*i.c + 0.0001)
       if x**2 > a**2:
         x = a
       y = sqrt(a**2 - x**2)
@@ -354,8 +356,8 @@ class Log:
                           biny=biny,a=a,b=b)
       return before,x,y
   def bin(i,x):
-    x = int(x/(i.c/i.bins))
-    return min(i.bins - 1, x)
+    x = int(x/((i.c+0.0001)/i.bins))
+    return max(0,min(i.bins - 1, x))
   def pos(i,x) :
     return i._pos[id(x)]
   def clone(i,inits=[]):
@@ -433,7 +435,7 @@ def mutate1(old,p,lo,hi):
   return bound(y,lo,hi)
 
 def bound(x, lo, hi):
-  return lo + ((x - lo) % (hi - lo))
+  return lo if lo==hi else lo + ((x - lo) % (hi - lo))
 
 def decs(x): return x.decs
 def objs(x): return x.objs
@@ -475,7 +477,7 @@ def doNothing(model,pop,*l,**d):
   
 def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   rseed(seed)
-  init=20*len(model.objs)
+  init=10*len(model.objs)
   pop0   = [model.eval(model.decide(retries=retries))
              for one in xrange(init)]
   #check1(">",pop0)
@@ -483,6 +485,7 @@ def optimize(model,how,seed=1,init=10,verbose=False,retries=100,**d):
   logObjs = Log(pop0, value=objs)
   pop = how(model,pop0[:],logDecs,logObjs, verbose=verbose,**d)
   #check1("<",pop)
+  map(model.eval,pop)
   return pop0,pop
 
 def check(s,(a,z)):
@@ -595,37 +598,51 @@ def cdoms(model,frontier,space):
          y.alive = False
   return [f for f in frontier if f.alive]
 
-def what4(model,frontier,logDecs,logObjs,era=50,budget=12,
+def what4(model,frontier,logDecs0,logObjs,era=50,budget=4,f=0.75,cr=0.3,
          repeats=10,select="bdom",verbose=False,**d):
   budget = max(1,budget//4)
-  repeats = 1
-  for r in xrange(repeats):
-    quads   = Log(frontier,value=decs,bins=2)
+  size    = len(frontier)
+  repeats=8
+  for r in xrange(repeats+1):
+    wanted = size - len(frontier)
+    print("w",wanted)
+    for _ in xrange(wanted): 
+      child = smear(frontier,log=logDecs0,f=f,
+                     cr=cr,evaluate=None)
+      frontier += [child]
+    if r == repeats:
+      return frontier
+    logDecs   = Log(frontier,value=decs,bins=2)
     corners = {}
     wins    = {}
     directions = [(0,0),(0,1),(1,0),(1,1)]
+    logObjs=None
     for x1,y1 in directions:
       corner = corners[(x1,y1)] =  []
       wins[(x1,y1)] = 0
       tmp = []
-      for one in quads.cells[x1][y1]:
-        about = quads.about(one)
+      for one in logDecs.cells[x1][y1]:
+        about = logDecs.about(one)
         x2,y2 = about.x,about.y
         d     = ((x1-x2)**2 + (y1-y2)**2)**0.5
         tmp += [(d,one)]
       corner[:] = map(model.eval,
                       map(second,
                           sorted(tmp)[:budget]))
+      if logObjs:
+        for one in corner:
+          logObjs + one
+      else:
+        logObjs = Log(corner,value=objs)
     for d1,items1 in corners.items():
       for d2,items2 in corners.items():
         for one in items1:
           for two in items2:
             if model.select(one,two,select,logObjs.space):
-              wins[d1] += 1
-    _,win = sorted([(v,k) for k,v in wins.items()])[-1]
+              wins[d1] += len(items1)/size
+    maybe = [(wins[k],k) for k in corners if corners[k]]
+    win   = sorted(maybe)[-1][1]
     frontier = corners[win]
-    print(win,len(frontier))
-  return frontier
 
 def de(model,frontier,logDecs,logObjs,era=50,
        repeats=10,select="bdom",verbose=False,cr=0.3,f=0.75,**d):
@@ -681,6 +698,7 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
       i.first = {}
   hows = [metas(how) for how in hows]
   for model in models:
+    print(model.__name__)
     rseed(seed0)
     every = []
     firsts = []
@@ -723,14 +741,13 @@ def igd(models=[Fonseca,ZDT1],hows=[de],verbose=False,
          for z in meta.last[k]:
            _,d = space.closest(z,bests)
            better + d
-       print(eden.also().range,",eden,",model.__name__)
-       print(baseline.also().range,",baseline,",model.__name__)
-       print(better  .also().range,",",meta.name, ",",model.__name__)
+       #print(eden.also().range,",eden,",model.__name__)
+       #print(baseline.also().range,",baseline,",model.__name__)
+       #print(better  .also().range,",",meta.name, ",",model.__name__)
        comp1= [int(100*(a-z)/(a+0.00001))
                for a,z in zip(eden.also().range,baseline.also().range)]
        comp2= [int(100*(a-z)/(a+0.00001))
                for a,z in zip(eden.also().range,better.also().range)]
-       print("\n")
        print(comp1,"eden - baseline")
        print(comp2,"eden - better",meta.name)
          
@@ -751,8 +768,9 @@ def cdomDemo():
 
 def what4Demo():
   print("cdom")
-  igd(models=[DTLZ7_6_7],
-      hows=[what4],init=300,repeats=10,verbose=True,
+  igd(#models=[DTLZ7_6_7],
+      models=[Fonseca,ZDT1,DTLZ7_2_3,DTLZ7_4_5,DTLZ7_6_7],
+      hows=[what4,de],init=300,repeats=10,verbose=True,
       selects=cdoms, select="cdom")
 
 what4Demo()
